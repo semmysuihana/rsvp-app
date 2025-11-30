@@ -21,14 +21,14 @@ export default function DetailsPage() {
 useEffect(() => {
   const fetchData = async () => {
     if (eventId) {
-      await handleEventById(eventId).catch((err) => {
+      await handleEventById().catch((err) => {
         console.error("Failed to fetch event details:", err);
       });
     }
   };
 
   void fetchData(); 
-}, [eventId, handleEventById]);
+}, [eventId]);
 
 
   return (

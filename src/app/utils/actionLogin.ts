@@ -3,16 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-export interface LoginInput {
-  username: string;
-  password: string;
-}
-
-interface Alert {
-  type: "success" | "error" | "info" | "warning";
-  message: string;
-}
+import type { Alert } from "~/types/auth";
 
 export function useLogin() {
   const router = useRouter();
@@ -21,32 +12,95 @@ export function useLogin() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (formData: FormData) => {
-    const usernameEntry = formData.get("username");
-    const passwordEntry = formData.get("password");
+    const username = formData.get("username");
+    const password = formData.get("password");
+    const turnstile = formData.get("turnstile");
 
-    if (typeof usernameEntry !== "string" || typeof passwordEntry !== "string") {
+    if (
+      typeof username !== "string" ||
+      typeof password !== "string" ||
+      typeof turnstile !== "string"
+    ) {
       setShowAlert(true);
       setAlert({ type: "error", message: "Format input tidak valid" });
       return;
     }
 
+    if(!turnstile) {
+      setShowAlert(true);
+      setAlert({ type: "error", message: "Security check tidak valid. Silakan ulangi Turnstile." });
+      return;
+    }
+    if(username.trim() === "" || password.trim() === "") {
+      setShowAlert(true);
+      setAlert({ type: "error", message: "Please fill all the fields" });
+      return;
+    }
+
     setLoading(true);
 
-    const res = await signIn("credentials", {
-      username: usernameEntry.trim(),
-      password: passwordEntry.trim(),
-      redirect: false,
-    });
+    try {
+      // ---------------------------------------------------
+      // 1️⃣ CEK RATE LIMIT DARI BACKEND NEXTAUTH
+      // ---------------------------------------------------
+      const rateCheck = await fetch("/api/auth/callback/credentials", {
+        method: "POST",
+        body: new URLSearchParams({
+          username: "",
+          password: "",
+          turnstile: "",
+        }),
+        redirect: "manual", 
+      });
 
-    
+        if (rateCheck.status === 429) {
+          setShowAlert(true);
+          setAlert({
+            type: "warning",
+            message:
+              "Terlalu banyak percobaan login. Silakan coba beberapa menit lagi.",
+          });
+          return;
+        }
 
-    if (!res?.error) {
-      setAlert({ type: "success", message: "Login berhasil!" });
-      router.push("/dashboard");
-      setLoading(false);
-    } else {
+      // ---------------------------------------------------
+      // 2️⃣ LANJUT LOGIN DENGAN signIn()
+      // ---------------------------------------------------
+      const res = await signIn("credentials", {
+        username: username.trim(),
+        password: password.trim(),
+        turnstile,
+        redirect: false,
+      });
+
+      if (!res) {
+        setShowAlert(true);
+        setAlert({ type: "error", message: "Terjadi kesalahan server" });
+      } else if (res.error === "CredentialsSignin") {
+        setShowAlert(true);
+        setAlert({
+          type: "error",
+          message: "Username atau password salah",
+        });
+      } else if (!res.error) {
+        setAlert({ type: "success", message: "Login berhasil!" });
+        setShowAlert(true);
+        setTimeout(() => router.push("/dashboard"), 500);
+      } else {
+        setShowAlert(true);
+        setAlert({
+          type: "error",
+          message: `Login gagal: ${res.error}`,
+        });
+      }
+    } catch (err) {
+      console.error(err);
       setShowAlert(true);
-      setAlert({ type: "error", message: "Username atau password salah" });
+      setAlert({
+        type: "error",
+        message: "Terjadi kesalahan. Silakan coba lagi",
+      });
+    } finally {
       setLoading(false);
     }
   };

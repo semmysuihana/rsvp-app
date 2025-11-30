@@ -1,47 +1,49 @@
-/**
- * YOU PROBABLY DON'T NEED TO EDIT THIS FILE, UNLESS:
- * 1. You want to modify request context (see Part 1).
- * 2. You want to create a new middleware or type of procedure (see Part 3).
- *
- * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
- * need to use are documented accordingly near the end.
- */
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/app/api/auth/[...nextauth]/route";
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
-import { TRPCError } from "@trpc/server";  
 import { db } from "~/server/db";
+import { headers } from "next/headers";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
-/**
- * 1. CONTEXT
- *
- * This section defines the "contexts" that are available in the backend API.
- *
- * These allow you to access things when processing a request, like the database, the session, etc.
- *
- * This helper generates the "internals" for a tRPC context. The API handler and RSC clients each
- * wrap this and provides the required context.
- *
- * @see https://trpc.io/docs/server/context
- */
-export const createTRPCContext = async (opts: { headers: Headers }) => {
+// ----------------------
+// Helper
+// ----------------------
+function normalizeHeader(value: unknown): string {
+  if (typeof value !== "string") return "";
+  return value;
+}
+
+// ----------------------
+// Create Context
+// ----------------------
+export const createTRPCContext = async () => {
   const session = await getServerSession(authOptions);
+  const h = await headers();
+
+  const rawForwarded: unknown = h.get("x-forwarded-for");
+  const rawRealIp: unknown = h.get("x-real-ip");
+
+  const forwarded = normalizeHeader(rawForwarded);
+  const realIp = normalizeHeader(rawRealIp);
+
+  const ip =
+    forwarded.split(",")[0]?.trim() ??
+    realIp.trim() ??
+    "127.0.0.1";
+
   return {
     db,
     session,
-    ...opts,
+    ip,
   };
 };
 
-/**
- * 2. INITIALIZATION
- *
- * This is where the tRPC API is initialized, connecting the context and transformer. We also parse
- * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
- * errors on the backend.
- */
+// ----------------------
+// Init tRPC — HARUS sebelum middleware & procedure lain
+// ----------------------
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
@@ -56,68 +58,33 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
   },
 });
 
-/**
- * Create a server-side caller.
- *
- * @see https://trpc.io/docs/server/server-side-calls
- */
-export const createCallerFactory = t.createCallerFactory;
-
-/**
- * 3. ROUTER & PROCEDURE (THE IMPORTANT BIT)
- *
- * These are the pieces you use to build your tRPC API. You should import these a lot in the
- * "/src/server/api/routers" directory.
- */
-
-/**
- * This is how you create new routers and sub-routers in your tRPC API.
- *
- * @see https://trpc.io/docs/router
- */
 export const createTRPCRouter = t.router;
 
-/**
- * Middleware for timing procedure execution and adding an artificial delay in development.
- *
- * You can remove this if you don't like it, but it can help catch unwanted waterfalls by simulating
- * network latency that would occur in production but not in local development.
- */
+// ----------------------
+// Timing middleware
+// ----------------------
 const timingMiddleware = t.middleware(async ({ next, path }) => {
   const start = Date.now();
-
-  if (t._config.isDev) {
-    // artificial delay in dev
-    const waitMs = Math.floor(Math.random() * 400) + 100;
-    await new Promise((resolve) => setTimeout(resolve, waitMs));
-  }
-
   const result = await next();
-
-  const end = Date.now();
-  console.log(`[TRPC] ${path} took ${end - start}ms to execute`);
-
+  if (process.env.NODE_ENV !== "production") {
+  console.log(`[TRPC] ${path} took ${Date.now() - start}ms`);
+}
   return result;
 });
 
-/**
- * Public (unauthenticated) procedure
- *
- * This is the base piece you use to build new queries and mutations on your tRPC API. It does not
- * guarantee that a user querying is authorized, but you can still access user session data if they
- * are logged in.
- */
-
 export const publicProcedure = t.procedure.use(timingMiddleware);
 
+// ----------------------
+// Protected middleware
+// ----------------------
 export const protectedMiddleware = t.middleware(({ ctx, next }) => {
   if (!ctx.session?.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
+
   return next({
     ctx: {
       ...ctx,
-      session: ctx.session,
       user: ctx.session.user,
     },
   });
@@ -126,3 +93,34 @@ export const protectedMiddleware = t.middleware(({ ctx, next }) => {
 export const protectedProcedure = t.procedure
   .use(timingMiddleware)
   .use(protectedMiddleware);
+
+// ----------------------
+// Rate Limit
+// ----------------------
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(20, "10 s"),
+});
+
+const rateLimitMiddleware = t.middleware(async ({ ctx, next, path }) => {
+  const ip = ctx.ip ?? "127.0.0.1";
+
+  const { success } = await ratelimit.limit(ip + ":" + path);
+
+  if (!success) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Too many requests, please slow down.",
+    });
+  }
+
+  return next();
+});
+
+export const restrictedPublicProcedure =
+  t.procedure.use(rateLimitMiddleware);
+
+// ----------------------
+// Caller Factory
+// ----------------------
+export const createCallerFactory = t.createCallerFactory;

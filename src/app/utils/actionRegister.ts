@@ -2,12 +2,12 @@
 
 import { api } from "~/trpc/react";
 import { useState } from "react";
+import type { Alert } from "~/types/auth";
 
 export enum Gender {
   MALE = "MALE",
   FEMALE = "FEMALE",
 }
-
 
 export interface RegisterInput {
   name: string;
@@ -18,19 +18,14 @@ export interface RegisterInput {
   email: string;
   username: string;
   password: string;
-}
-
-interface Alert {
-  type: "success" | "error" | "info" | "warning";
-  message: string;
+  turnstileToken: string;
 }
 
 export function useRegister() {
- 
   const [alert, setAlert] = useState<Alert | null>(null);
   const [showAlert, setShowAlert] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
-  
+
   const register = api.register.create.useMutation({
     onSuccess: () => {
       setAlert({ type: "success", message: "Register berhasil" });
@@ -60,9 +55,14 @@ export function useRegister() {
     const password = formData.get("password");
     const confirmPassword = formData.get("confirmPassword");
 
-    // ——————————————————————
+    // TOKEN TURNSTILE
+    const turnstile = formData.get("turnstile");
+
+    if (!turnstile || typeof turnstile !== "string") {
+      return error("Security check tidak valid. Silakan ulangi Turnstile.");
+    }
+
     // VALIDASI WAJIB ISI
-    // ——————————————————————
     if (
       !name ||
       !idCardNumber ||
@@ -77,9 +77,7 @@ export function useRegister() {
       return error("Semua field harus diisi");
     }
 
-    // ——————————————————————
     // VALIDASI TIPE
-    // ——————————————————————
     if (
       typeof name !== "string" ||
       typeof idCardNumber !== "string" ||
@@ -94,40 +92,30 @@ export function useRegister() {
       return error("Format input tidak valid");
     }
 
-    // ——————————————————————
-    // VALIDASI NIK (16 DIGIT)
-    // ——————————————————————
+    // VALIDASI NIK
     if (!/^\d{16}$/.test(idCardNumber)) {
       return error("ID Card Number harus 16 digit (NIK)");
     }
 
-    // ——————————————————————
-    // VALIDASI NOMOR HP INDONESIA
-    // ——————————————————————
+    // VALIDASI NO HP
     if (!/^(\+628|08)\d{7,12}$/.test(phone)) {
       return error("Nomor telepon tidak valid. Gunakan format Indonesia.");
     }
 
-    // ——————————————————————
     // VALIDASI EMAIL
-    // ——————————————————————
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return error("Email tidak valid");
     }
 
-    // ——————————————————————
     // USERNAME MINIMAL 8 KARAKTER
-    // ——————————————————————
     if (username.trim().length < 8) {
       return error("Username minimal 8 karakter");
     }
 
-    // ——————————————————————
-    // PASSWORD RULE:
-    // — Minimal 1 huruf kecil
-    // — Minimal 1 huruf besar
-    // — Minimal 1 angka
-    // ——————————————————————
+    // PASSWORD RULE
+    if (password.trim().length < 8) {
+      return error("Password minimal 8 karakter");
+    }
     if (!/[a-z]/.test(password)) {
       return error("Password harus memiliki huruf kecil");
     }
@@ -138,15 +126,13 @@ export function useRegister() {
       return error("Password harus memiliki angka");
     }
 
-    // ——————————————————————
     // CONFIRM PASSWORD
-    // ——————————————————————
     if (password !== confirmPassword) {
       return error("Confirm password tidak cocok dengan password");
     }
 
-    // Input final
     setLoading(true);
+
     const input: RegisterInput = {
       name: name.trim(),
       idCardNumber: idCardNumber.trim(),
@@ -156,8 +142,10 @@ export function useRegister() {
       email: email.trim(),
       username: username.trim(),
       password: password.trim(),
+      turnstileToken: turnstile,
     };
-      register.mutate(input);
+
+    register.mutate(input);
   };
 
   return {

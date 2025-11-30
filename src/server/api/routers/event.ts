@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { db } from "~/server/db";
 
@@ -39,7 +39,7 @@ getAll: protectedProcedure
 
 
   // GET BY ID
-  getById: publicProcedure
+  getById: protectedProcedure
     .input(z.string())
     .output(eventSchema)
     .query(async ({ input }) => {
@@ -68,7 +68,7 @@ getAll: protectedProcedure
   delete: protectedProcedure
   .input(z.string())
   .mutation(async ({ ctx, input }) => {
-    const userId = ctx.session.user.id;
+    const userId = ctx.session?.user.id;
 
     // Cek apakah event milik user ini
     const event = await db.event.findUnique({ where: { id: input } });

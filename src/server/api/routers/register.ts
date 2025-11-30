@@ -1,29 +1,56 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, restrictedPublicProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
 import { db } from "~/server/db";
+import { RegisterRateLimit } from "~/server/rateLimit";
 
+
+
+// ENUM gender untuk Prisma
 export enum Gender {
   MALE = "MALE",
   FEMALE = "FEMALE",
 }
 
+// Zod enum untuk validasi
+const genderEnum = z.enum([Gender.MALE, Gender.FEMALE]);
+
+// TURNSTILE
+async function verifyTurnstile(token: string) {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+
+  const res = await fetch(
+    "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        secret,
+        response: token,
+      }),
+    }
+  );
+
+  return res.json() as Promise<{ success: boolean }>;
+}
+
 export const registerRouter = createTRPCRouter({
-  create: publicProcedure
+  create: restrictedPublicProcedure
     .input(
       z.object({
-        name: z.string(),
-        idCardNumber: z.string(),
-        birthDate: z.string(),
-        gender: z.string(),
-        phone: z.string(),
+        name: z.string().min(1),
+        idCardNumber: z.string().min(1),
+        birthDate: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/),
+        gender: genderEnum,
+        phone: z.string().min(1),
         email: z.string().email(),
-        username: z.string(),
-        password: z.string(),
+        username: z.string().min(1),
+        password: z.string().min(6),
+        turnstileToken: z.string(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const {
         name,
         idCardNumber,
@@ -33,10 +60,39 @@ export const registerRouter = createTRPCRouter({
         email,
         username,
         password,
+        turnstileToken,
       } = input;
 
+       // ---------------------------------------
+      // VERIFY RATE LIMIT
       // ---------------------------------------
-      // CEK DUPLIKASI
+
+        const ip = ctx.ip ?? "anonymous";
+
+      // RATE LIMIT
+      const result = await RegisterRateLimit.limit(ip);
+
+      if (!result.success) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "Terlalu banyak percobaan registrasi. Coba lagi nanti.",
+        });
+      }
+
+
+      // ---------------------------------------
+      // VERIFY TURNSTILE
+      // ---------------------------------------
+      const verify = await verifyTurnstile(turnstileToken);
+      if (!verify.success) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Gagal verifikasi keamanan. Mohon refresh halaman.",
+        });
+      }
+
+      // ---------------------------------------
+      // CEK DUPLIKASI USER
       // ---------------------------------------
       const existing = await db.user.findFirst({
         where: {
@@ -52,7 +108,7 @@ export const registerRouter = createTRPCRouter({
       if (existing) {
         throw new TRPCError({
           code: "CONFLICT",
-          message: "Username / Email / Phone / NIK sudah digunakan",
+          message: "Username / Email / Phone / NIK sudah digunakan.",
         });
       }
 
@@ -61,15 +117,23 @@ export const registerRouter = createTRPCRouter({
       // ---------------------------------------
       const passwordHash = await bcrypt.hash(password, 10);
 
+
+      const parsedBirthDate = new Date(birthDate);
+      if (isNaN(parsedBirthDate.getTime())) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Format tanggal lahir tidak valid.",
+        });
+      }
       // ---------------------------------------
-      // SAVE USER
+      // SIMPAN DATA USER
       // ---------------------------------------
       await db.user.create({
         data: {
           name,
           idCardNumber,
-          birthDate: new Date(birthDate),
-          gender: gender as Gender,
+          birthDate: parsedBirthDate,
+          gender,
           phone,
           email,
           username,
