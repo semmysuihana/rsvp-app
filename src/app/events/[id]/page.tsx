@@ -30,7 +30,6 @@ useEffect(() => {
   void fetchData(); 
 }, [eventId]);
 
-
   return (
     <>
       {loading && (

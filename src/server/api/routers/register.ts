@@ -41,7 +41,7 @@ export const registerRouter = createTRPCRouter({
       z.object({
         name: z.string().min(1),
         idCardNumber: z.string().min(1),
-        birthDate: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/),
+        birthDate: z.coerce.date(),
         gender: genderEnum,
         phone: z.string().min(1),
         email: z.string().email(),
@@ -118,13 +118,7 @@ export const registerRouter = createTRPCRouter({
       const passwordHash = await bcrypt.hash(password, 10);
 
 
-      const parsedBirthDate = new Date(birthDate);
-      if (isNaN(parsedBirthDate.getTime())) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Format tanggal lahir tidak valid.",
-        });
-      }
+
       // ---------------------------------------
       // SIMPAN DATA USER
       // ---------------------------------------
@@ -132,7 +126,7 @@ export const registerRouter = createTRPCRouter({
         data: {
           name,
           idCardNumber,
-          birthDate: parsedBirthDate,
+          birthDate,
           gender,
           phone,
           email,

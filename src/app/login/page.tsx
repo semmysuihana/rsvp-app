@@ -8,13 +8,23 @@ import Alert from "../component/alert";
 import FormSetting from "~/component/formSetting";
 import type { Field } from "~/types/field";
 import Turnstile from "react-turnstile";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Login() {
-  const { handleLogin, loading, alert, showAlert, setShowAlert } = useLogin();
+  const { handleLogin, loading, alert, showAlert, setShowAlert, setResetTurnstile } = useLogin();
 
   const [turnstileToken, setTurnstileToken] = useState("");
   const [turnstileError, setTurnstileError] = useState("");
+  const [turnstileKey, setTurnstileKey] = useState(0);
+
+  // Pass reset function to useLogin hook
+  useEffect(() => {
+    setResetTurnstile(() => () => {
+      setTurnstileKey(prev => prev + 1);
+      setTurnstileToken("");
+      setTurnstileError("");
+    });
+  }, [setResetTurnstile]);
   const fields: Field[] = [
     { type: "text", name: "username", label: "Username", placeholder: "Enter username" },
     { type: "password", name: "password", label: "Password" },
@@ -72,8 +82,20 @@ export default function Login() {
         <div className="mb-4 flex justify-center">
           <div className="flex justify-center items-center h-[70px] w-full">
             <Turnstile
+              key={turnstileKey}
               sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-              onVerify={(token) => setTurnstileToken(token)}
+              onVerify={(token) => {
+                setTurnstileToken(token);
+                setTurnstileError("");
+              }}
+              onError={() => {
+                setTurnstileError("Turnstile verification failed. Please try again.");
+                setTurnstileToken("");
+              }}
+              onExpire={() => {
+                setTurnstileToken("");
+                setTurnstileError("Turnstile expired. Please verify again.");
+              }}
             />
           </div>
         </div>

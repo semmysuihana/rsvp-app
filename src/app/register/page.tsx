@@ -8,13 +8,24 @@ import Alert from "../component/alert";
 import FormSetting from "~/component/formSetting";
 import type { Field } from "~/types/field";
 import Turnstile from "react-turnstile";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Register() {
-  const { handleRegister, loading, alert, showAlert, setShowAlert } = useRegister();
+  const { handleRegister, loading, alert, showAlert, setShowAlert, setResetTurnstile } = useRegister();
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [turnstileError, setTurnstileError] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
+
+  // Pass reset function to useRegister hook
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    setResetTurnstile(() => () => {
+      setTurnstileKey(prev => prev + 1);
+      setTurnstileToken(null);
+      setTurnstileError(null);
+    });
+  }, [setResetTurnstile]);
 
   const fields: Field[] = [
     { type: "text", name: "name", label: "Full Name", placeholder: "Enter full name" },
@@ -75,10 +86,19 @@ export default function Register() {
           {/* Turnstile */}
           <div className="mb-4 flex justify-center">
             <Turnstile
+              key={turnstileKey}
               sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
               onVerify={(token) => {
                 setTurnstileToken(token);
                 setTurnstileError(null);
+              }}
+              onError={() => {
+                setTurnstileError("Turnstile verification failed. Please try again.");
+                setTurnstileToken(null);
+              }}
+              onExpire={() => {
+                setTurnstileToken(null);
+                setTurnstileError("Turnstile expired. Please verify again.");
               }}
             />
           </div>

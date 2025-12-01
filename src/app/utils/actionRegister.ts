@@ -12,7 +12,7 @@ export enum Gender {
 export interface RegisterInput {
   name: string;
   idCardNumber: string;
-  birthDate: string;
+  birthDate: Date;
   gender: Gender;
   phone: string;
   email: string;
@@ -25,6 +25,7 @@ export function useRegister() {
   const [alert, setAlert] = useState<Alert | null>(null);
   const [showAlert, setShowAlert] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [resetTurnstile, setResetTurnstile] = useState<(() => void) | null>(null);
 
   const register = api.register.create.useMutation({
     onSuccess: () => {
@@ -36,12 +37,14 @@ export function useRegister() {
       setAlert({ type: "error", message: err.message });
       setShowAlert(true);
       setLoading(false);
+      resetTurnstile?.();
     },
   });
 
   const error = (message: string) => {
     setAlert({ type: "error", message });
     setShowAlert(true);
+    resetTurnstile?.();
   };
 
   const handleRegister = (formData: FormData) => {
@@ -136,7 +139,7 @@ export function useRegister() {
     const input: RegisterInput = {
       name: name.trim(),
       idCardNumber: idCardNumber.trim(),
-      birthDate: birthDate.trim(),
+      birthDate: new Date(birthDate),
       gender: gender.trim() as Gender,
       phone: phone.trim(),
       email: email.trim(),
@@ -154,5 +157,6 @@ export function useRegister() {
     alert,
     showAlert,
     setShowAlert,
+    setResetTurnstile,
   };
 }
