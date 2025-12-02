@@ -17,12 +17,14 @@ export type TextField = BaseField & {
     | "search"
     | "textarea";
   placeholder?: string;
+  value?: string | number | Date | null;
 };
 
 export type SelectField = BaseField & {
   type: "select";
   options: string[];
   placeholder?: string;
+  value?: string | number | null;
 };
 
 export type Field = TextField | SelectField;

@@ -27,7 +27,23 @@ export default function Sidebar() {
   return (
     <>
      {/* Logout Modal */}
-      {modalLogout && <ModalDesign setModalOpen={setModalLogout} actionSuccess={() => signOut()} message={"Are you sure you want to logout?"} />}
+      {modalLogout && <ModalDesign isOpen={modalLogout} title="Logout Confirmation" onClose={() => setModalLogout(false)}>
+        <h2 className="text-lg font-semibold mb-3">Are you sure to logout?</h2>
+        <div className="flex justify-end gap-2">
+          <button
+            className="px-4 py-2 bg-gray-500 rounded-md hover:bg-gray-400 cursor-pointer"
+            onClick={() => setModalLogout(false)}
+          >
+            Cancel
+          </button>
+          <button
+            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 cursor-pointer"
+            onClick={() => signOut()}
+          >
+            Confirm
+          </button>
+        </div>
+      </ModalDesign>}
       {/* Mobile top bar */}
       <div className="bg-gray-800 md:hidden fixed top-0 left-0 w-full z-50 flex items-center justify-between text-white px-4 py-3 shadow">
         <div className="font-semibold text-lg">RSVP Event</div>

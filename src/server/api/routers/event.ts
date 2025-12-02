@@ -39,18 +39,22 @@ getAll: protectedProcedure
 
 
   // GET BY ID
-  getById: protectedProcedure
-    .input(z.string())
-    .output(eventSchema)
-    .query(async ({ input }) => {
-      const event = await db.event.findUnique({ where: { id: input } });
+getById: protectedProcedure
+  .input(z.string())
+  .output(eventSchema.nullable())  // <-- boleh null
+  .query(async ({ ctx, input }) => {
+    const userId = ctx.session?.user.id;
 
-      if (!event) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
-      }
+    const event = await db.event.findFirst({
+      where: {
+        id: input,
+        userId,
+      },
+    });
 
-      return event;
-    }),
+    return event ?? null; 
+  }),
+
 
   // CREATE
   create: protectedProcedure
@@ -65,6 +69,42 @@ getAll: protectedProcedure
         data: result,
       };
     }),
+
+  // UPDATE
+  update: protectedProcedure
+    .input(
+      eventSchema.omit({ createdAt: true, updatedAt: true })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session?.user.id;
+
+      // Cek apakah event milik user ini
+      const event = await db.event.findUnique({ where: { id: input.id } });
+
+      if (!event) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+      }
+
+      if (event.userId !== userId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You don't have permission to update this event",
+        });
+      }
+
+      const { id, ...updateData } = input;
+      const result = await db.event.update({
+        where: { id },
+        data: updateData,
+      });
+
+      return {
+        message: "Event updated successfully",
+        data: result,
+      };
+    }),
+
+    // DELETE
   delete: protectedProcedure
   .input(z.string())
   .mutation(async ({ ctx, input }) => {

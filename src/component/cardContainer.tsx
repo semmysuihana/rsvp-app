@@ -1,9 +1,17 @@
 "use client";
 
 export default function CardContainer({
-  children
+  children,
+  cols = 2, // default 2 kolom
 }: {
   children: React.ReactNode;
+  cols?: number;
 }) {
-  return <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">{children}</div>;
+  return (
+    <div
+      className={`grid gap-6 grid-cols-1 sm:grid-cols-${cols} lg:grid-cols-${cols}`}
+    >
+      {children}
+    </div>
+  );
 }

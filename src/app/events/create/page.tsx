@@ -54,7 +54,7 @@ return(
   Back
 </Link>
 
-    <FormSetting fields={fields} submitText="Create" onSubmit={handleEvent} />
+    <FormSetting fields={fields} submitText="Create" onSubmit={handleEvent} cols={2} />
 
     </PageContainer>
 </>    

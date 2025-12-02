@@ -9,7 +9,7 @@ export default async function Dashboard() {
       <PageHeader title="Dashboard" subtitle="Overview & quick stats" />
 
       {/* Cards Container */}
-      <CardContainer>
+      <CardContainer cols={4}>
 
         {/* Card  */}
         <CardDesign nameCard="Total event" value={"24"} />

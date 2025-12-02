@@ -4,17 +4,20 @@ import { api } from "~/trpc/react";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-
 interface Alert {
   type: "success" | "error" | "info" | "warning";
   message: string;
 }
 
-export function useEvent(id?: string) {
+export function useEvent() {
   const [alert, setAlert] = useState<Alert | null>(null);
   const [showAlert, setShowAlert] = useState(false);
+  const [eventId, setEventId] = useState<string | null>(null);
   const { data: session } = useSession();
   const router = useRouter();
+
+  // RESET EVENT
+      const utils = api.useUtils();
 
   // GET ALL EVENTS (manual trigger)
   const {
@@ -27,21 +30,84 @@ export function useEvent(id?: string) {
 const {
   data: eventById,
   isLoading: fetchingById,
-  refetch: refetchById,
-} = api.event.getById.useQuery(id!, { enabled: false });
+} = api.event.getById.useQuery(eventId!, {
+  enabled: !!eventId,
+});
 
-const handleEventById = async () => {
+const handleEventById = async (id: string) => {
   try {
-    await refetchById();
-  } catch {
+    if (!id) return;
+    setEventId(id);
+  } catch (err) {
     setAlert({
       type: "error",
-      message: "Failed to fetch event detail",
+      message: err instanceof Error ? err.message : "An unknown error occurred",
     });
     setShowAlert(true);
   }
 };
 
+
+  // MUTATION UPDATE
+  const { mutate: updateEvent, isPending: updating } = api.event.update.useMutation({
+    onSuccess: async () => {
+      setAlert({ type: "success", message: "Event updated successfully" });
+      setShowAlert(true);
+      await refetch();
+      await utils.event.getAll.invalidate(); // invalidate list
+      await utils.event.getById.invalidate(); // invalidate detail
+      router.push("/events");
+    },
+    onError: (err) => {
+      setAlert({ type: "error", message: err.message });
+      setShowAlert(true);
+    },
+  });
+
+  const handleUpdate = (id: string, formData: FormData) => {
+    const name = formData.get("name") as string | null;
+    const dateString = formData.get("date") as string | null;
+    const timeString = formData.get("time") as string | null;
+    const date = dateString ? new Date(dateString) : null;
+    const time = timeString ? new Date(`1970-01-01T${timeString}:00`) : null;
+
+    const venueName = formData.get("venueName") as string | null;
+    const address = formData.get("address") as string | null;
+    const rtRw = (formData.get("rtRw") as string | null) ?? "";
+    const district = (formData.get("district") as string | null) ?? "";
+    const subDistrict = (formData.get("subDistrict") as string | null) ?? "";
+    const city = (formData.get("city") as string | null) ?? "";
+    const googleMapUrl = (formData.get("googleMapUrl") as string | null) ?? "";
+    const maxPax = Number(formData.get("maxPax"));
+
+
+
+
+    if (!name || !date || !time || !venueName || !address || !maxPax || isNaN(maxPax)) {
+      setAlert({
+        type: "error",
+        message: "Name, Date, Time, Venue Name, Address, Max Pax is required",
+      });
+      setShowAlert(true);
+      return;
+    }
+
+    updateEvent({
+      id,
+      userId: session?.user.id ?? "",
+      name,
+      date,
+      time,
+      venueName,
+      address,
+      rtRw,
+      district,
+      subDistrict,
+      city,
+      googleMapUrl,
+      maxPax,
+    });
+  };
 
   // MUTATION CREATE
   const { mutate: createEvent, isPending: creating } = api.event.create.useMutation({
@@ -54,26 +120,7 @@ const handleEventById = async () => {
       setShowAlert(true);
     },
   });
-
-  // MUTATION DELETE
-  const { mutate: deleteEvent, isPending: deleting } =
-    api.event.delete.useMutation({
-      onSuccess: async () => {
-        setAlert({ type: "success", message: "Event deleted successfully" });
-        setShowAlert(true);
-        await refetch();
-      },
-      onError: (err) => {
-        setAlert({ type: "error", message: err.message });
-        setShowAlert(true);
-      },
-    });
-
-  const handleDelete = async (id: string) => {
-    deleteEvent(id);
-  };
-
-  const handleEvent = (formData: FormData) => {
+    const handleEvent = (formData: FormData) => {
     const name = formData.get("name") as string | null;
     const dateString = formData.get("date") as string | null;
     const timeString = formData.get("time") as string | null;
@@ -114,7 +161,29 @@ const handleEventById = async () => {
     });
   };
 
-  const loading = fetching || creating || deleting || fetchingById;
+  // MUTATION DELETE
+  const { mutate: deleteEvent, isPending: deleting } =
+    api.event.delete.useMutation({
+      onSuccess: async () => {
+        setAlert({ type: "success", message: "Event deleted successfully" });
+        setShowAlert(true);
+        await refetch();
+        await utils.event.getAll.invalidate(); // invalidate list
+      await utils.event.getById.invalidate(); // invalidate detail
+      },
+      onError: (err) => {
+        setAlert({ type: "error", message: err.message });
+        setShowAlert(true);
+      },
+    });
+
+  const handleDelete = async (id: string) => {
+    deleteEvent(id);
+  };
+
+
+
+  const loading = fetching || creating || deleting || fetchingById || updating;
 
   return {
     events: events ?? [],
@@ -127,6 +196,6 @@ const handleEventById = async () => {
     setShowAlert,
     handleEvent,
     refetch,
-    refetchById,
+    handleUpdate,
   };
 }
