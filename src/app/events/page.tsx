@@ -10,7 +10,8 @@ export default function Event() {
   const { events, loading, alert, showAlert, handleDelete, refetch, setShowAlert } = useEvent();
   useEffect(() => {
   void refetch();
-}, []);
+// eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -32,7 +33,7 @@ export default function Event() {
       <PageHeader title="Events" subtitle="Overview & quick stats" />
                 {/* Scroll wrapper: full width but limit with max-w-full so body tidak melebar */}
 <div className="w-full max-w-full overflow-x-auto">
-  <CardList data={events} link="/events" onDelete={handleDelete} />
+  <CardList name="event" data={events} link="/events" onDelete={handleDelete} detailIdTo="guest" display={["name", "date", "time", "venueName", "address"]} />
 </div>
 
     </PageContainer>

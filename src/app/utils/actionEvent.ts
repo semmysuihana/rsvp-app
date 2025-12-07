@@ -178,6 +178,7 @@ const handleEventById = async (id: string) => {
     });
 
   const handleDelete = async (id: string) => {
+    if (!id) return;
     deleteEvent(id);
   };
 

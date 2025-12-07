@@ -126,6 +126,22 @@ exports.Prisma.EventScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.GuestScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  name: 'name',
+  phone: 'phone',
+  rsvpStatus: 'rsvpStatus',
+  notes: 'notes',
+  substituteName: 'substituteName',
+  pax: 'pax',
+  sendCount: 'sendCount',
+  maxSend: 'maxSend',
+  lastSendAt: 'lastSendAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -134,6 +150,11 @@ exports.Prisma.SortOrder = {
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
 };
 exports.Gender = exports.$Enums.Gender = {
   MALE: 'MALE',
@@ -146,9 +167,16 @@ exports.SubscriptionPlan = exports.$Enums.SubscriptionPlan = {
   PRO: 'PRO'
 };
 
+exports.RSVPStatus = exports.$Enums.RSVPStatus = {
+  WAITING: 'WAITING',
+  CONFIRMED: 'CONFIRMED',
+  CANCELLED: 'CANCELLED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
-  Event: 'Event'
+  Event: 'Event',
+  Guest: 'Guest'
 };
 /**
  * Create the Client
@@ -198,13 +226,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/app/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nenum Gender {\n  MALE\n  FEMALE\n}\n\nenum SubscriptionPlan {\n  FREE\n  BASIC\n  PRO\n}\n\nmodel User {\n  id               String           @id @default(uuid())\n  name             String\n  idCardNumber     String           @unique\n  birthDate        DateTime\n  gender           Gender\n  phone            String           @unique\n  email            String           @unique\n  username         String           @unique\n  passwordHash     String\n  subscriptionPlan SubscriptionPlan @default(FREE)\n  createdAt        DateTime         @default(now())\n  updatedAt        DateTime         @updatedAt\n\n  // Relation\n  events Event[]\n}\n\nmodel Event {\n  id           String   @id @default(uuid())\n  userId       String\n  name         String\n  date         DateTime\n  time         DateTime\n  venueName    String\n  address      String\n  rtRw         String\n  district     String\n  subDistrict  String\n  city         String\n  googleMapUrl String\n  maxPax       Int\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n\n  // Relation FK\n  user User @relation(fields: [userId], references: [id], onDelete: Restrict)\n}\n",
-  "inlineSchemaHash": "6963ff04667f3c9d1971cd511edd2b7a4473517d7425e4f5b0da4a0444ec5ada",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/app/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nenum Gender {\n  MALE\n  FEMALE\n}\n\nenum SubscriptionPlan {\n  FREE\n  BASIC\n  PRO\n}\n\nenum RSVPStatus {\n  WAITING\n  CONFIRMED\n  CANCELLED\n}\n\nmodel User {\n  id               String           @id @default(uuid())\n  name             String\n  idCardNumber     String           @unique\n  birthDate        DateTime\n  gender           Gender\n  phone            String           @unique\n  email            String           @unique\n  username         String           @unique\n  passwordHash     String\n  subscriptionPlan SubscriptionPlan @default(FREE)\n  createdAt        DateTime         @default(now())\n  updatedAt        DateTime         @updatedAt\n\n  // Relation\n  events Event[]\n}\n\nmodel Event {\n  id           String   @id @default(uuid())\n  userId       String\n  name         String\n  date         DateTime\n  time         DateTime\n  venueName    String\n  address      String\n  rtRw         String\n  district     String\n  subDistrict  String\n  city         String\n  googleMapUrl String\n  maxPax       Int\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n\n  // Relation FK\n  user   User    @relation(fields: [userId], references: [id], onDelete: Restrict)\n  guests Guest[]\n}\n\nmodel Guest {\n  id             String     @id @default(uuid())\n  eventId        String\n  name           String\n  phone          String\n  rsvpStatus     RSVPStatus @default(WAITING)\n  notes          String?\n  substituteName String?\n  pax            Int        @default(1)\n  sendCount      Int        @default(0)\n  maxSend        Int        @default(3)\n  lastSendAt     DateTime?\n  createdAt      DateTime   @default(now())\n  updatedAt      DateTime   @updatedAt\n\n  event Event @relation(fields: [eventId], references: [id], onDelete: Restrict)\n}\n",
+  "inlineSchemaHash": "210df353093a4d9b88044b61547590d2a6ec93f3f89c4320a34766729a9a059a",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"idCardNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"birthDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"gender\",\"kind\":\"enum\",\"type\":\"Gender\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"passwordHash\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"subscriptionPlan\",\"kind\":\"enum\",\"type\":\"SubscriptionPlan\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"events\",\"kind\":\"object\",\"type\":\"Event\",\"relationName\":\"EventToUser\"}],\"dbName\":null},\"Event\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"date\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"time\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"venueName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"rtRw\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"district\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"subDistrict\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"city\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"googleMapUrl\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"maxPax\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"EventToUser\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"idCardNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"birthDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"gender\",\"kind\":\"enum\",\"type\":\"Gender\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"passwordHash\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"subscriptionPlan\",\"kind\":\"enum\",\"type\":\"SubscriptionPlan\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"events\",\"kind\":\"object\",\"type\":\"Event\",\"relationName\":\"EventToUser\"}],\"dbName\":null},\"Event\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"date\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"time\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"venueName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"rtRw\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"district\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"subDistrict\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"city\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"googleMapUrl\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"maxPax\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"EventToUser\"},{\"name\":\"guests\",\"kind\":\"object\",\"type\":\"Guest\",\"relationName\":\"EventToGuest\"}],\"dbName\":null},\"Guest\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"eventId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"rsvpStatus\",\"kind\":\"enum\",\"type\":\"RSVPStatus\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"substituteName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"pax\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"sendCount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"maxSend\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"lastSendAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"event\",\"kind\":\"object\",\"type\":\"Event\",\"relationName\":\"EventToGuest\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -17,9 +17,7 @@ export default function Register() {
   const [turnstileError, setTurnstileError] = useState<string | null>(null);
   const [turnstileKey, setTurnstileKey] = useState(0);
 
-  // Pass reset function to useRegister hook
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     setResetTurnstile(() => () => {
       setTurnstileKey(prev => prev + 1);
       setTurnstileToken(null);
@@ -39,7 +37,6 @@ export default function Register() {
     { type:"password",name:"confirmPassword",label:"Confirm Password",placeholder:"Enter confirm password"},
   ];
 
-  // wrapper submit handler
   const onSubmit = async (formData: FormData) => {
     if (!turnstileToken) {
       setTurnstileError("Please complete the security check.");
@@ -47,71 +44,80 @@ export default function Register() {
     }
 
     formData.append("turnstile", turnstileToken);
-
-     handleRegister(formData);
+    handleRegister(formData);
   };
 
   return (
     <>
       {loading && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50">
           <Loading />
         </div>
       )}
-
-      <div className="relative min-h-screen bg-gradient-to-br flex items-center justify-center px-4 py-12">
-
         {showAlert && (
           <div className="mb-4">
             <Alert alert={alert} setShowAlert={setShowAlert} />
           </div>
         )}
 
-        <div className="relative w-full max-w-md bg-white/10 backdrop-blur-lg p-8 rounded-3xl shadow-xl border border-white/20">
+      <div className="relative min-h-screen flex items-center justify-center px-4 py-12
+        bg-gradient-to-br from-gray-100 to-gray-300
+        dark:from-gray-900 dark:to-gray-950 transition-colors duration-300">
 
-          {/* Logo */}
+      
+
+        <div
+  className="relative w-full max-w-md md:max-w-xl lg:max-w-2xl
+  bg-white/10 dark:bg-black/30 
+  backdrop-blur-lg p-8 rounded-3xl shadow-2xl
+  border border-white/20 dark:border-white/10
+  transition duration-300 ease-in-out">
+
+
           <div className="flex flex-col items-center mb-6">
-            <Image src="/vercel.svg" alt="Logo" width={60} height={60} className="rounded-full" />
-            <h2 className="mt-4 text-3xl font-bold text-white text-center">Create Account</h2>
-            <p className="mt-1 text-indigo-200 text-sm text-center">
+            <Image src="/rsvp.svg" alt="Logo" width={60} height={60} className="rounded-full" />
+            <h2 className="mt-4 text-3xl font-bold text-center text-black dark:text-white">Create Account</h2>
+            <p className="mt-1 text-sm text-center text-gray-600 dark:text-gray-300">
               Fill in your details to register
             </p>
           </div>
 
-          {/* Turnstile Error */}
           {turnstileError && (
-            <p className="text-red-300 text-center mb-3">{turnstileError}</p>
+            <p className="mb-4 text-center text-red-600 dark:text-red-400">
+              {turnstileError}
+            </p>
           )}
 
-          {/* Turnstile */}
           <div className="mb-4 flex justify-center">
-            <Turnstile
-              key={turnstileKey}
-              sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-              onVerify={(token) => {
-                setTurnstileToken(token);
-                setTurnstileError(null);
-              }}
-              onError={() => {
-                setTurnstileError("Turnstile verification failed. Please try again.");
-                setTurnstileToken(null);
-              }}
-              onExpire={() => {
-                setTurnstileToken(null);
-                setTurnstileError("Turnstile expired. Please verify again.");
-              }}
-            />
+            <div className="flex justify-center items-center h-[70px] w-full">
+              <Turnstile
+                key={turnstileKey}
+                sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+                onVerify={(token) => {
+                  setTurnstileToken(token);
+                  setTurnstileError(null);
+                }}
+                onError={() => {
+                  setTurnstileError("Turnstile verification failed. Please try again.");
+                  setTurnstileToken(null);
+                }}
+                onExpire={() => {
+                  setTurnstileToken(null);
+                  setTurnstileError("Turnstile expired. Please verify again.");
+                }}
+              />
+            </div>
           </div>
 
-          {/* Form main */}
-          <FormSetting fields={fields} submitText="Register" onSubmit={onSubmit} />
+          <FormSetting fields={fields} submitText="Register" onSubmit={onSubmit} cols={2} />
 
-          <div className="mt-6 text-center text-sm text-gray-200">
+          <div className="mt-6 text-center text-sm text-gray-700 dark:text-gray-300">
             Already have an account?{" "}
-            <Link href="/login" className="text-indigo-300 font-semibold hover:text-white transition">
+            <Link href="/login" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:text-indigo-800 dark:hover:text-white transition">
               Sign In
             </Link>
           </div>
+
         </div>
       </div>
     </>

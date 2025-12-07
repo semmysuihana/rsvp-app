@@ -1,9 +1,11 @@
+
 import type { Metadata } from "next";
 import "./../styles/globals.css";
 import { TRPCReactProvider } from "~/trpc/react";
-import SettingMode from "./component/settingMode";
-import ThemeProvider from "./component/themeProvider";
 import { AuthProvider } from "~/component/SessionProvider";
+import { ThemeProvider } from "next-themes";
+import ThemeToggle from "~/component/themeToggle";
+
 export const metadata: Metadata = {
   title: "RSVP Event Management System",
   description: "RSVP Event Management System",
@@ -11,25 +13,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-       <body className="min-h-screen bg-gray-900">
+    <html lang="en" suppressHydrationWarning>
+      <body className="min-h-screen bg-gray-100 dark:bg-gray-900">
         <AuthProvider>
- <TRPCReactProvider>
-  <ThemeProvider>
-    
-  {children}
-  
-  </ThemeProvider>
-
-  </TRPCReactProvider>
-   </AuthProvider>
- <SettingMode />
-
-
-</body>
-
+          <TRPCReactProvider>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+              {children}
+              <ThemeToggle />
+            </ThemeProvider>
+          </TRPCReactProvider>
+        </AuthProvider>
+      </body>
     </html>
   );
-} 
-
-
+}

@@ -105,7 +105,7 @@ async function rateLimitedHandler(req: Request, res: Response) {
     const { success } = await LoginRateLimit.limit(ip);
 
     if (!success) {
-      return new Response(null, {
+      return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
         status: 429,
         headers: { "Content-Type": "application/json" },
       });

@@ -19,6 +19,12 @@ enum SubscriptionPlan {
   PRO
 }
 
+enum RSVPStatus {
+  WAITING
+  CONFIRMED
+  CANCELLED
+}
+
 model User {
   id               String           @id @default(uuid())
   name             String
@@ -55,5 +61,24 @@ model Event {
   updatedAt    DateTime @updatedAt
 
   // Relation FK
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  guests Guest[]
+}
+
+model Guest {
+  id             String     @id @default(uuid())
+  eventId        String
+  name           String
+  phone          String
+  rsvpStatus     RSVPStatus @default(WAITING)
+  notes          String?
+  substituteName String?
+  pax            Int        @default(1)
+  sendCount      Int        @default(0)
+  maxSend        Int        @default(3)
+  lastSendAt     DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Restrict)
 }

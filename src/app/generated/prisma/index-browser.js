@@ -154,6 +154,22 @@ exports.Prisma.EventScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.GuestScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  name: 'name',
+  phone: 'phone',
+  rsvpStatus: 'rsvpStatus',
+  notes: 'notes',
+  substituteName: 'substituteName',
+  pax: 'pax',
+  sendCount: 'sendCount',
+  maxSend: 'maxSend',
+  lastSendAt: 'lastSendAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -162,6 +178,11 @@ exports.Prisma.SortOrder = {
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
 };
 exports.Gender = exports.$Enums.Gender = {
   MALE: 'MALE',
@@ -174,9 +195,16 @@ exports.SubscriptionPlan = exports.$Enums.SubscriptionPlan = {
   PRO: 'PRO'
 };
 
+exports.RSVPStatus = exports.$Enums.RSVPStatus = {
+  WAITING: 'WAITING',
+  CONFIRMED: 'CONFIRMED',
+  CANCELLED: 'CANCELLED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
-  Event: 'Event'
+  Event: 'Event',
+  Guest: 'Guest'
 };
 
 /**

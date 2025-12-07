@@ -1,27 +1,26 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-}
+@variant dark (&:where(.dark, .dark *));
 
 html,
 body {
   height: 100%;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 .container-size {
   height: 100%;
 }
-:root {
-  --bg: #ffffff;
-  --text: #000000;
-}
 
-[data-theme="dark"] {
-  --bg: #111827;
-  --text: #ffffff;
-}
+
 
 
 

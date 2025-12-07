@@ -16,5 +16,6 @@ export const config = {
     "/profile/:path*",
     "/statistics/:path*",
     "/subscription/:path*",
+    "/guest/:path*",
   ],
 };

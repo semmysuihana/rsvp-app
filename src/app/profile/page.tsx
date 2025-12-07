@@ -13,7 +13,7 @@ import type { Field } from "~/types/field";
 import ModalDesign from "~/component/modalDesign";
 import { useState } from "react";
 export default function ProfilePage() {
-  const { profile, loading, alert, showAlert, setShowAlert, handleGetProfile, handleUpdate } = useProfile();
+  const { profile, loading, alert, showAlert, setShowAlert, handleGetProfile, handleUpdate, handleUpdatePassword } = useProfile();
   const { data: session } = useSession();
   const [modalOpen, setModalOpen] = useState(false);
   const fieldsPassword: Field[] = [
@@ -83,6 +83,11 @@ export default function ProfilePage() {
   const onSubmit = async (formData: FormData) =>{
    await handleUpdate(formData);
   };
+
+  const onSubmitPassword = async (formData: FormData) => {
+    await handleUpdatePassword(formData);
+    setModalOpen(false);
+  };
   return (
     <>
       {modalOpen && (
@@ -94,7 +99,7 @@ export default function ProfilePage() {
           <FormSetting
             fields={fieldsPassword}
             submitText="Update"
-            onSubmit={onSubmit}
+            onSubmit={onSubmitPassword}
           />
           <button
             className="mt-4 px-4 py-2 w-full bg-gray-500 rounded-md hover:bg-red-400 cursor-pointer"

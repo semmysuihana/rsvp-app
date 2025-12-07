@@ -3,13 +3,15 @@
 import { api } from "~/trpc/react";
 import { useState } from "react";
 import type { Alert } from "~/types/auth";
-import { set } from "zod";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export function useProfile() {
   const [alert, setAlert] = useState<Alert | null>(null);
   const [showAlert, setShowAlert] = useState(false);
   const [profileId, setProfileId] = useState<string | null>(null);
-
+  const { data: session } = useSession();
+  
   // GET PROFILE BY ID
   const {
     data: profile,
@@ -19,8 +21,9 @@ export function useProfile() {
     enabled: !!profileId,
   });
 
-  const handleGetProfile = async (id: string) => {
+  const handleGetProfile = async () => {
     try {
+      const id = session?.user.id;
       if (!id) return;
       setProfileId(id);
     } catch (err) {
@@ -38,6 +41,7 @@ export function useProfile() {
       setAlert({ type: "success", message: "Profile updated successfully" });
       await refetch();
     },
+
     onError: (err) => {
       setShowAlert(true);
       setAlert({ type: "error", message: err instanceof Error ? err.message : "An unknown error occurred" });
@@ -64,9 +68,6 @@ export function useProfile() {
     gender: profile.gender,
     idCardNumber: profile.idCardNumber,
   };
-
-  console.log("updatedData", updatedData);
-  console.log("originalData", originalData);
 
   // Check if any key changed
   const isChanged = Object.keys(updatedData).some(
@@ -98,7 +99,79 @@ export function useProfile() {
   }
   await updateProfile(updatedData);
   };
-  const loading = fetching || isUpdating;
+
+  // UPDATE PASSWORD MUTATION
+  const { mutate: updatePassword, isPending: isUpdatingPassword } = api.profile.updatePassword.useMutation({
+    onSuccess: async () => {
+      setShowAlert(true);
+      setAlert({ type: "success", message: "Password updated successfully" });
+    },
+    onError: (err) => {
+      setShowAlert(true);
+      setAlert({ type: "error", message: err.message });
+    },
+  });
+
+  const handleUpdatePassword = async (formData: FormData) => {
+    const oldPassword = formData.get("oldPassword") as string;
+    const newPassword = formData.get("newPassword") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
+
+    // Validation
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      setShowAlert(true);
+      setAlert({
+        type: "error",
+        message: "All password fields are required",
+      });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setShowAlert(true);
+      setAlert({
+        type: "error",
+        message: "New password must be at least 8 characters",
+      });
+      return;
+    }
+
+    if (!/[a-z]/.test(newPassword)) {
+      setShowAlert(true);
+      setAlert({ type: "error", message: "Password must have lowercase letter" });
+      return;
+    }
+
+    if (!/[A-Z]/.test(newPassword)) {
+      setShowAlert(true);
+      setAlert({ type: "error", message: "Password must have uppercase letter" });
+      return;
+    }
+
+    if (!/[0-9]/.test(newPassword)) {
+      setShowAlert(true);
+      setAlert({ type: "error", message: "Password must have number" });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setShowAlert(true);
+      setAlert({
+        type: "error",
+        message: "New password and confirm password do not match",
+      });
+      return;
+    }
+
+     updatePassword({
+      oldPassword,
+      newPassword,
+      confirmPassword,
+    });
+
+  };
+
+  const loading = fetching || isUpdating || isUpdatingPassword;
 
   return {
     profile: profile ?? null,
@@ -109,5 +182,6 @@ export function useProfile() {
     handleGetProfile,
     refetch,
     handleUpdate,
+    handleUpdatePassword,
   };
 }

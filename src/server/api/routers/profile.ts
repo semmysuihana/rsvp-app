@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
+import { TRPCError } from "@trpc/server";
+import bcrypt from "bcryptjs";
 
 // =========================
 // Zod Schema
@@ -61,6 +63,72 @@ update: protectedProcedure
     };
   }),
 
+  // UPDATE PASSWORD
+  updatePassword: protectedProcedure
+    .input(
+      z.object({
+        oldPassword: z.string().min(1),
+        newPassword: z.string().min(8),
+        confirmPassword: z.string().min(8),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session?.user.id;
+
+      if (!userId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not authenticated",
+        });
+      }
+
+      // Validate new password matches confirm password
+      if (input.newPassword !== input.confirmPassword) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "New password and confirm password do not match",
+        });
+      }
+
+      // Get current user
+      const user = await db.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      // Verify old password
+      const isCorrectPassword = await bcrypt.compare(
+        input.oldPassword,
+        user.passwordHash
+      );
+
+      if (!isCorrectPassword) {
+        console.log("Old password is incorrect");
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Old password is incorrect",
+        });
+      }
+
+      // Hash new password
+      const newPasswordHash = await bcrypt.hash(input.newPassword, 10);
+
+      // Update password
+      await db.user.update({
+        where: { id: userId },
+        data: { passwordHash: newPasswordHash },
+      });
+
+      return {
+        message: "Password updated successfully",
+      };
+    }),
 });
 
 export type ProfileRouter = typeof profileRouter;
