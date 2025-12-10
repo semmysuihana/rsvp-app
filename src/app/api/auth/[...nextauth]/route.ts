@@ -7,14 +7,11 @@ import { db } from "~/server/db";
 import type { NextAuthOptions } from "next-auth";
 import { LoginRateLimit } from "~/server/rateLimit";
 import { getClientIp } from "~/server/ip";
-import type { Session, User } from "next-auth";
+import type { User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import { NextRequest } from "next/server";
-
-type TurnstileResponse = {
-  success: boolean;
-  "error-codes"?: string[];
-};
+import type { TurnstileResponse } from "~/types/auth";
+import type { Session } from "next-auth";
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -84,22 +81,17 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: User }) {
-      if (user) token.user = user;
+    async jwt({ token, user }) {
+      if (user) {
+        token.user = user;
+      }
       return token;
     },
 
-    async session({ session, token }: { session: Session; token: JWT }) {
-      const u = token.user as Partial<User>;
-
-      session.user = {
-        id: String(u.id),
-        username: String(u.username),
-        name: u.name ?? null,
-        email: u.email ?? null,
-        subscriptionPlan: u.subscriptionPlan ?? null,
-      } as User;
-
+    async session({ session, token }) {
+      if (token.user) {
+        session.user = token.user as User;
+      }
       return session;
     },
   },
