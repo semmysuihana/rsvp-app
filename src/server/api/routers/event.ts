@@ -52,6 +52,15 @@ const eventSchemaWithCapacity = eventSchema.extend({
 const eventSchemaWithGuestsCapacity = eventSchemaWithCapacity.extend({
   guests: z.array(guestSchema).optional(),
 });
+
+// =========================
+// Type Definitions
+// =========================
+type Guest = z.infer<typeof guestSchema>;
+type Event = z.infer<typeof eventSchema>;
+type EventWithCapacity = z.infer<typeof eventSchemaWithCapacity>;
+type EventWithGuestsCapacity = z.infer<typeof eventSchemaWithGuestsCapacity>;
+
 // =========================
 export const eventRouter = createTRPCRouter({
   // GET ALL
@@ -66,8 +75,8 @@ getAll: protectedProcedure
     });
 
     // Hitung RSVPs dari tabel guest
-    const results = await Promise.all(
-  events.map(async (event) => {
+    const results: EventWithGuestsCapacity[] = await Promise.all(
+  events.map(async (event: Event): Promise<EventWithGuestsCapacity> => {
     const [confirmed, waiting, canceled] = await Promise.all([
       db.guest.aggregate({
         _sum: { pax: true },
@@ -103,7 +112,7 @@ getAll: protectedProcedure
 getById: protectedProcedure
   .input(z.string())
   .output(eventSchemaWithGuestsCapacity.nullable())
-  .query(async ({ ctx, input }) => {
+  .query(async ({ ctx, input }): Promise<EventWithGuestsCapacity | null> => {
     const userId = ctx.session?.user.id;
 
     const event = await db.event.findFirst({
@@ -128,7 +137,7 @@ getById: protectedProcedure
   }),
 ]);
 
-return {
+const result: EventWithGuestsCapacity = {
   ...event,
   capacity: {
     confirmed: confirmed._sum.pax ?? 0,
@@ -137,6 +146,7 @@ return {
   },
 };
 
+return result;
   }),
 
 
@@ -164,7 +174,7 @@ return {
       const userId = ctx.session?.user.id;
 
       // Cek apakah event milik user ini
-      const event = await db.event.findUnique({ where: { id: input.id } });
+      const event: Event | null = await db.event.findUnique({ where: { id: input.id } });
 
       if (!event) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
@@ -196,7 +206,7 @@ return {
     const userId = ctx.session?.user.id;
 
     // Cek apakah event milik user ini
-    const event = await db.event.findUnique({ where: { id: input } });
+    const event: Event | null = await db.event.findUnique({ where: { id: input } });
 
     if (!event) {
       throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
