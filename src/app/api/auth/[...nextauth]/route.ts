@@ -9,6 +9,7 @@ import { LoginRateLimit } from "~/server/rateLimit";
 import { getClientIp } from "~/server/ip";
 import type { Session, User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
+import { NextRequest } from "next/server";
 
 type TurnstileResponse = {
   success: boolean;
@@ -28,8 +29,13 @@ export const authOptions: NextAuthOptions = {
       },
 
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password || !credentials?.turnstile)
+        if (
+          !credentials?.username ||
+          !credentials?.password ||
+          !credentials?.turnstile
+        ) {
           return null;
+        }
 
         // VERIFY TURNSTILE
         const formData = new FormData();
@@ -61,7 +67,10 @@ export const authOptions: NextAuthOptions = {
 
         if (!user) return null;
 
-        const ok = await bcrypt.compare(credentials.password, user.passwordHash);
+        const ok = await bcrypt.compare(
+          credentials.password,
+          user.passwordHash
+        );
         if (!ok) return null;
 
         return {
@@ -75,13 +84,13 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
-  async jwt({ token, user }: { token: JWT; user?: User }) {
-    if (user) token.user = user;
-    return token;
-  },
+    async jwt({ token, user }: { token: JWT; user?: User }) {
+      if (user) token.user = user;
+      return token;
+    },
 
-  async session({ session, token }: { session: Session; token: JWT }) {
-          const u = token.user as Partial<User>;
+    async session({ session, token }: { session: Session; token: JWT }) {
+      const u = token.user as Partial<User>;
 
       session.user = {
         id: String(u.id),
@@ -90,27 +99,21 @@ export const authOptions: NextAuthOptions = {
         email: u.email ?? null,
         subscriptionPlan: u.subscriptionPlan ?? null,
       } as User;
-    return session;
-  },
-},
 
+      return session;
+    },
+  },
 };
 
-const handler = NextAuth(authOptions) as (
-  req: Request,
-  res: Response
-) => Promise<Response>;
+// NextAuth handler (App Router compatible)
+const handler = NextAuth(authOptions);
 
+// Rate-limited wrapper for NextRequest
+export async function POST(request: NextRequest) {
+  const url = new URL(request.url);
 
-async function rateLimitedHandler(req: Request, res: Response) {
-  const pathname = new URL(
-  req.url,
-  process.env.NEXTAUTH_URL
-).pathname;
-
-
-  if (req.method === "POST" && pathname.endsWith("/callback/credentials")) {
-    const ip = await getClientIp(req);
+  if (url.pathname.endsWith("/callback/credentials")) {
+    const ip = await getClientIp(request);
     const { success } = await LoginRateLimit.limit(ip);
 
     if (!success) {
@@ -121,7 +124,9 @@ async function rateLimitedHandler(req: Request, res: Response) {
     }
   }
 
-  return handler(req, res);
+  return handler(request);
 }
 
-export { rateLimitedHandler as GET, rateLimitedHandler as POST };
+export function GET(request: NextRequest) {
+  return handler(request);
+}
