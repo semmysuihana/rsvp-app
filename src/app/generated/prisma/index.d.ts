@@ -2342,6 +2342,7 @@ export namespace Prisma {
     city: string | null
     googleMapUrl: string | null
     maxPax: number | null
+    description: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2360,6 +2361,7 @@ export namespace Prisma {
     city: string | null
     googleMapUrl: string | null
     maxPax: number | null
+    description: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2378,6 +2380,7 @@ export namespace Prisma {
     city: number
     googleMapUrl: number
     maxPax: number
+    description: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -2406,6 +2409,7 @@ export namespace Prisma {
     city?: true
     googleMapUrl?: true
     maxPax?: true
+    description?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2424,6 +2428,7 @@ export namespace Prisma {
     city?: true
     googleMapUrl?: true
     maxPax?: true
+    description?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2442,6 +2447,7 @@ export namespace Prisma {
     city?: true
     googleMapUrl?: true
     maxPax?: true
+    description?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -2547,6 +2553,7 @@ export namespace Prisma {
     city: string
     googleMapUrl: string
     maxPax: number
+    description: string
     createdAt: Date
     updatedAt: Date
     _count: EventCountAggregateOutputType | null
@@ -2584,6 +2591,7 @@ export namespace Prisma {
     city?: boolean
     googleMapUrl?: boolean
     maxPax?: boolean
+    description?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -2605,6 +2613,7 @@ export namespace Prisma {
     city?: boolean
     googleMapUrl?: boolean
     maxPax?: boolean
+    description?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -2624,6 +2633,7 @@ export namespace Prisma {
     city?: boolean
     googleMapUrl?: boolean
     maxPax?: boolean
+    description?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -2643,11 +2653,12 @@ export namespace Prisma {
     city?: boolean
     googleMapUrl?: boolean
     maxPax?: boolean
+    description?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "name" | "date" | "time" | "venueName" | "address" | "rtRw" | "district" | "subDistrict" | "city" | "googleMapUrl" | "maxPax" | "createdAt" | "updatedAt", ExtArgs["result"]["event"]>
+  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "name" | "date" | "time" | "venueName" | "address" | "rtRw" | "district" | "subDistrict" | "city" | "googleMapUrl" | "maxPax" | "description" | "createdAt" | "updatedAt", ExtArgs["result"]["event"]>
   export type EventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     guests?: boolean | Event$guestsArgs<ExtArgs>
@@ -2680,6 +2691,7 @@ export namespace Prisma {
       city: string
       googleMapUrl: string
       maxPax: number
+      description: string
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["event"]>
@@ -3120,6 +3132,7 @@ export namespace Prisma {
     readonly city: FieldRef<"Event", 'String'>
     readonly googleMapUrl: FieldRef<"Event", 'String'>
     readonly maxPax: FieldRef<"Event", 'Int'>
+    readonly description: FieldRef<"Event", 'String'>
     readonly createdAt: FieldRef<"Event", 'DateTime'>
     readonly updatedAt: FieldRef<"Event", 'DateTime'>
   }
@@ -4810,6 +4823,7 @@ export namespace Prisma {
     city: 'city',
     googleMapUrl: 'googleMapUrl',
     maxPax: 'maxPax',
+    description: 'description',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -5073,6 +5087,7 @@ export namespace Prisma {
     city?: StringFilter<"Event"> | string
     googleMapUrl?: StringFilter<"Event"> | string
     maxPax?: IntFilter<"Event"> | number
+    description?: StringFilter<"Event"> | string
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -5093,6 +5108,7 @@ export namespace Prisma {
     city?: SortOrder
     googleMapUrl?: SortOrder
     maxPax?: SortOrder
+    description?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -5116,6 +5132,7 @@ export namespace Prisma {
     city?: StringFilter<"Event"> | string
     googleMapUrl?: StringFilter<"Event"> | string
     maxPax?: IntFilter<"Event"> | number
+    description?: StringFilter<"Event"> | string
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -5136,6 +5153,7 @@ export namespace Prisma {
     city?: SortOrder
     googleMapUrl?: SortOrder
     maxPax?: SortOrder
+    description?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: EventCountOrderByAggregateInput
@@ -5162,6 +5180,7 @@ export namespace Prisma {
     city?: StringWithAggregatesFilter<"Event"> | string
     googleMapUrl?: StringWithAggregatesFilter<"Event"> | string
     maxPax?: IntWithAggregatesFilter<"Event"> | number
+    description?: StringWithAggregatesFilter<"Event"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
   }
@@ -5385,6 +5404,7 @@ export namespace Prisma {
     city: string
     googleMapUrl: string
     maxPax: number
+    description?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutEventsInput
@@ -5405,6 +5425,7 @@ export namespace Prisma {
     city: string
     googleMapUrl: string
     maxPax: number
+    description?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     guests?: GuestUncheckedCreateNestedManyWithoutEventInput
@@ -5423,6 +5444,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     googleMapUrl?: StringFieldUpdateOperationsInput | string
     maxPax?: IntFieldUpdateOperationsInput | number
+    description?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutEventsNestedInput
@@ -5443,6 +5465,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     googleMapUrl?: StringFieldUpdateOperationsInput | string
     maxPax?: IntFieldUpdateOperationsInput | number
+    description?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: GuestUncheckedUpdateManyWithoutEventNestedInput
@@ -5462,6 +5485,7 @@ export namespace Prisma {
     city: string
     googleMapUrl: string
     maxPax: number
+    description?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -5479,6 +5503,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     googleMapUrl?: StringFieldUpdateOperationsInput | string
     maxPax?: IntFieldUpdateOperationsInput | number
+    description?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -5497,6 +5522,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     googleMapUrl?: StringFieldUpdateOperationsInput | string
     maxPax?: IntFieldUpdateOperationsInput | number
+    description?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -5799,6 +5825,7 @@ export namespace Prisma {
     city?: SortOrder
     googleMapUrl?: SortOrder
     maxPax?: SortOrder
+    description?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -5821,6 +5848,7 @@ export namespace Prisma {
     city?: SortOrder
     googleMapUrl?: SortOrder
     maxPax?: SortOrder
+    description?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -5839,6 +5867,7 @@ export namespace Prisma {
     city?: SortOrder
     googleMapUrl?: SortOrder
     maxPax?: SortOrder
+    description?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -6381,6 +6410,7 @@ export namespace Prisma {
     city: string
     googleMapUrl: string
     maxPax: number
+    description?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     guests?: GuestCreateNestedManyWithoutEventInput
@@ -6399,6 +6429,7 @@ export namespace Prisma {
     city: string
     googleMapUrl: string
     maxPax: number
+    description?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     guests?: GuestUncheckedCreateNestedManyWithoutEventInput
@@ -6447,6 +6478,7 @@ export namespace Prisma {
     city?: StringFilter<"Event"> | string
     googleMapUrl?: StringFilter<"Event"> | string
     maxPax?: IntFilter<"Event"> | number
+    description?: StringFilter<"Event"> | string
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
   }
@@ -6615,6 +6647,7 @@ export namespace Prisma {
     city: string
     googleMapUrl: string
     maxPax: number
+    description?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutEventsInput
@@ -6634,6 +6667,7 @@ export namespace Prisma {
     city: string
     googleMapUrl: string
     maxPax: number
+    description?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -6667,6 +6701,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     googleMapUrl?: StringFieldUpdateOperationsInput | string
     maxPax?: IntFieldUpdateOperationsInput | number
+    description?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutEventsNestedInput
@@ -6686,6 +6721,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     googleMapUrl?: StringFieldUpdateOperationsInput | string
     maxPax?: IntFieldUpdateOperationsInput | number
+    description?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -6703,6 +6739,7 @@ export namespace Prisma {
     city: string
     googleMapUrl: string
     maxPax: number
+    description?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -6720,6 +6757,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     googleMapUrl?: StringFieldUpdateOperationsInput | string
     maxPax?: IntFieldUpdateOperationsInput | number
+    description?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: GuestUpdateManyWithoutEventNestedInput
@@ -6738,6 +6776,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     googleMapUrl?: StringFieldUpdateOperationsInput | string
     maxPax?: IntFieldUpdateOperationsInput | number
+    description?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: GuestUncheckedUpdateManyWithoutEventNestedInput
@@ -6756,6 +6795,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     googleMapUrl?: StringFieldUpdateOperationsInput | string
     maxPax?: IntFieldUpdateOperationsInput | number
+    description?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

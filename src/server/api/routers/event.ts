@@ -6,6 +6,21 @@ import { db } from "~/server/db";
 // =========================
 // Zod Schema
 // =========================
+const guestSchema = z.object({
+  id: z.string(),
+  eventId: z.string(),
+  name: z.string(),
+  phone: z.string(),
+  rsvpStatus: z.enum(["WAITING", "CONFIRMED", "CANCELLED"]),
+  notes: z.string().nullable().optional(),
+  substituteName: z.string().nullable().optional(),
+  pax: z.number(),
+  sendCount: z.number(),
+  maxSend: z.number(),
+  lastSendAt: z.date().nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
 const eventSchema = z.object({
   id: z.string(),
   userId: z.string(),
@@ -20,40 +35,110 @@ const eventSchema = z.object({
   city: z.string(),
   googleMapUrl: z.string(),
   maxPax: z.number(),
+  description: z.string(),  
+  
   createdAt: z.date(),
   updatedAt: z.date(),
 });
 
+const eventSchemaWithCapacity = eventSchema.extend({
+  capacity: z.object({
+    confirmed: z.number(),
+    waiting: z.number(),
+    canceled: z.number(),
+  }),
+});
 
+const eventSchemaWithGuestsCapacity = eventSchemaWithCapacity.extend({
+  guests: z.array(guestSchema).optional(),
+});
+// =========================
 export const eventRouter = createTRPCRouter({
   // GET ALL
 
 getAll: protectedProcedure
-  .output(z.array(eventSchema))
+  .output(z.array(eventSchemaWithGuestsCapacity))
   .query(async ({ ctx }) => {
     const userId = ctx.session?.user.id;
-    return db.event.findMany({
+
+    const events = await db.event.findMany({
       where: { userId },
     });
+
+    // Hitung RSVPs dari tabel guest
+    const results = await Promise.all(
+  events.map(async (event) => {
+    const [confirmed, waiting, canceled] = await Promise.all([
+      db.guest.aggregate({
+        _sum: { pax: true },
+        where: { eventId: event.id, rsvpStatus: "CONFIRMED" },
+      }),
+      db.guest.aggregate({
+        _sum: { pax: true },
+        where: { eventId: event.id, rsvpStatus: "WAITING" },
+      }),
+      db.guest.aggregate({
+        _sum: { pax: true },
+        where: { eventId: event.id, rsvpStatus: "CANCELLED" },
+      }),
+    ]);
+
+    return {
+      ...event,
+      capacity: {
+        confirmed: confirmed._sum.pax ?? 0,
+        waiting: waiting._sum.pax ?? 0,
+        canceled: canceled._sum.pax ?? 0,
+      },
+    };
+  })
+);
+
+    return results;
   }),
+
 
 
   // GET BY ID
 getById: protectedProcedure
   .input(z.string())
-  .output(eventSchema.nullable())  // <-- boleh null
+  .output(eventSchemaWithGuestsCapacity.nullable())
   .query(async ({ ctx, input }) => {
     const userId = ctx.session?.user.id;
 
     const event = await db.event.findFirst({
-      where: {
-        id: input,
-        userId,
-      },
+      where: { id: input, userId },
+      include: { guests: true },
     });
 
-    return event ?? null; 
+    if (!event) return null;
+
+    const [confirmed, waiting, canceled] = await Promise.all([
+  db.guest.aggregate({
+    _sum: { pax: true },
+    where: { eventId: input, rsvpStatus: "CONFIRMED" },
   }),
+  db.guest.aggregate({
+    _sum: { pax: true },
+    where: { eventId: input, rsvpStatus: "WAITING" },
+  }),
+  db.guest.aggregate({
+    _sum: { pax: true },
+    where: { eventId: input, rsvpStatus: "CANCELLED" },
+  }),
+]);
+
+return {
+  ...event,
+  capacity: {
+    confirmed: confirmed._sum.pax ?? 0,
+    waiting: waiting._sum.pax ?? 0,
+    canceled: canceled._sum.pax ?? 0,
+  },
+};
+
+  }),
+
 
 
   // CREATE

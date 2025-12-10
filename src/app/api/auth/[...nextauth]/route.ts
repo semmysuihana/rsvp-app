@@ -49,6 +49,14 @@ export const authOptions: NextAuthOptions = {
         // USER CHECK
         const user = await db.user.findUnique({
           where: { username: credentials.username },
+          select: {
+            id: true,
+            username: true,
+            name: true,
+            email: true,
+            passwordHash: true,
+            subscriptionPlan: true,
+          },
         });
 
         if (!user) return null;
@@ -60,6 +68,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           username: user.username,
           name: user.name ?? "",
+          subscriptionPlan: user.subscriptionPlan ?? null,
         };
       },
     }),
@@ -79,7 +88,7 @@ export const authOptions: NextAuthOptions = {
         username: String(u.username),
         name: u.name ?? null,
         email: u.email ?? null,
-        image: u.image ?? null,
+        subscriptionPlan: u.subscriptionPlan ?? null,
       } as User;
     return session;
   },

@@ -1,8 +1,8 @@
 "use client";
 import PageHeader from "~/component/pageHeader";
 import PageContainer from "~/component/pageContainer";
-import Loading from "~/app/component/loading";
-import Alert from "~/app/component/alert";
+import Loading from "~/component/loading";
+import Alert from "~/component/alert";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowAltCircleLeft

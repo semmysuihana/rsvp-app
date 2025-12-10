@@ -28,6 +28,7 @@ export function useGuest() {
     onSuccess: async () => {
       await refetch();
       await utils.guest.getEventWithGuests.invalidate();
+      await utils.event.getById.invalidate();
       setAlert({
         type: "success",
         message: "Guest deleted successfully",
@@ -47,6 +48,8 @@ export function useGuest() {
     onSuccess: async () => {
       await refetch();
       await utils.guest.getEventWithGuests.invalidate();
+      await utils.event.getById.invalidate();
+      
       setAlert({
         type: "success",
         message: "Guest added successfully",
@@ -78,10 +81,10 @@ export function useGuest() {
     deleteGuest(id);
   };
 
-  const handleAddGuest = async (formData: FormData) => {
+  const handleAddGuest = async (id: string, formData: FormData) => {
     const name = formData.get("name") as string;
     const phone = formData.get("phone") as string;
-    const notes = formData.get("note") as string;
+    const notes = formData.get("notes") as string;
     const substituteName = formData.get("substituteName") as string;
     const paxStr = formData.get("pax") as string;
     const maxSendStr = formData.get("maxSend") as string;
@@ -93,24 +96,24 @@ export function useGuest() {
         message: "Guest name and phone are required",
       });
       setShowAlert(true);
-      return;
+      return false;
     }
 
-    if (!eventId) {
+    if (!id) {
       setAlert({
         type: "error",
         message: "Event ID is missing",
       });
       setShowAlert(true);
-      return;
+      return false;
     }
 
     const pax = paxStr ? parseInt(paxStr, 10) : 1;
     const maxSend = maxSendStr ? parseInt(maxSendStr, 10) : 3;
-
+    
     try {
       await createGuest({
-        eventId,
+        eventId: id,
         name,
         phone,
         notes: notes || undefined,
@@ -118,8 +121,10 @@ export function useGuest() {
         pax,
         maxSend,
       });
+      return true;
     } catch (error) {
       console.error("Add guest error:", error);
+      return false;
     }
   };
 

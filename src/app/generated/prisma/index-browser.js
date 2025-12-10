@@ -150,6 +150,7 @@ exports.Prisma.EventScalarFieldEnum = {
   city: 'city',
   googleMapUrl: 'googleMapUrl',
   maxPax: 'maxPax',
+  description: 'description',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

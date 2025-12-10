@@ -1,54 +1,82 @@
 import type { TextField } from "~/types/field";
 import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
-export default function InputForm({ type, name, label, placeholder, optional, value }: TextField) {
+export default function InputForm({
+  type,
+  name,
+  label,
+  placeholder,
+  optional,
+  value,
+}: TextField) {
   const formatValue = (val: string | number | Date | null | undefined): string => {
     if (val === null || val === undefined) return "";
 
-    if (type === "date" && val) {
+    if (type === "date") {
       return new Date(val).toISOString().split("T")[0] ?? "";
     }
 
-    if (type === "time" && val) {
+    if (type === "time") {
       return new Date(val).toISOString().substring(11, 16);
     }
-
-    if (typeof val === "number") return val.toString();
-    if (val instanceof Date) return val.toISOString();
 
     return String(val);
   };
 
-  const formattedValue: string = formatValue(value);
-  const [inputValue, setInputValue] = useState(formattedValue);
+  const [inputValue, setInputValue] = useState(formatValue(value));
+  const [showPassword, setShowPassword] = useState(false);
+
+  const isPassword = type === "password";
+  const inputType = isPassword ? (showPassword ? "text" : "password") : type;
 
   return (
-    <div>
+    <div className="flex flex-col gap-1.5 w-full relative">
       <label
         htmlFor={name}
-        className="block text-sm font-medium text-gray-800 dark:text-gray-200"
+        className="text-sm font-medium text-gray-800 dark:text-gray-200"
       >
         {label}
-        {optional && <span className="text-gray-400 dark:text-gray-500"> (optional)</span>}
+        {optional && (
+          <span className="text-gray-400 dark:text-gray-500"> (optional)</span>
+        )}
       </label>
 
       <input
         id={name}
         name={name}
-        type={type}
+        type={inputType}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         placeholder={placeholder ?? label}
         className="
-          mt-2 w-full rounded-lg px-4 py-2 transition outline-
-          border border-gray-200
-          bg-white text-gray-800 placeholder-gray-500
-          focus:ring-2 focus:ring-indigo-400
-
-          dark:bg-gray-700 dark:text-gray-200 dark:placeholder-gray-400
-          dark:focus:ring-indigo-500
+          w-full rounded-lg border border-gray-300 dark:border-gray-600
+          bg-white dark:bg-gray-700
+          text-gray-800 dark:text-gray-200
+          placeholder-gray-400 dark:placeholder-gray-500
+          text-sm
+          px-4 py-2
+          focus:outline-none focus:ring-2 
+          focus:ring-indigo-400 dark:focus:ring-indigo-500
+          transition
         "
       />
+
+      {/* PASSWORD ICON ONLY */}
+      {isPassword && (
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="
+            absolute right-3 top-8
+            text-gray-500 dark:text-gray-400
+            hover:text-gray-700 dark:hover:text-gray-300
+          "
+        >
+          <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+        </button>
+      )}
     </div>
   );
 }

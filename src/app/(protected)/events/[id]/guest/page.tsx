@@ -5,8 +5,8 @@ import PageContainer from "~/component/pageContainer";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { useGuest } from "~/app/utils/actionGuest";
-import Loading from "~/app/component/loading";
-import Alert from "~/app/component/alert";
+import Loading from "~/component/loading";
+import Alert from "~/component/alert";
 import CardList from "~/component/cardList";
 
 export default function Guest() {

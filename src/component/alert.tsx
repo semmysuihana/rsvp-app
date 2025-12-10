@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faWarning, faCircleXmark, faCheck  } from "@fortawesome/free-solid-svg-icons";
 
 interface AlertProps {
   alert: { type: string; message: string } | null;
@@ -36,6 +38,17 @@ return (
   <div
     className={`${baseStyle} ${bg} fixed top-4 right-4 z-50 shadow-lg w-fit`}
   >
+    <span>
+      <FontAwesomeIcon
+        icon={
+          alert?.type === "success"
+            ? faCheck
+            : alert?.type === "error"
+            ? faCircleXmark
+            : faWarning
+        }
+      />
+    </span>
     <span className="flex-1">{alert?.message}</span>
     <button
       onClick={() => setShowAlert(false)}

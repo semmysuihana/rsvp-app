@@ -14,6 +14,7 @@ export function useEvent() {
   const [showAlert, setShowAlert] = useState(false);
   const [eventId, setEventId] = useState<string | null>(null);
   const { data: session } = useSession();
+  
   const router = useRouter();
 
   // RESET EVENT
@@ -33,7 +34,6 @@ const {
 } = api.event.getById.useQuery(eventId!, {
   enabled: !!eventId,
 });
-
 const handleEventById = async (id: string) => {
   try {
     if (!id) return;
@@ -71,7 +71,7 @@ const handleEventById = async (id: string) => {
     const date = dateString ? new Date(dateString) : null;
     const time = timeString ? new Date(`1970-01-01T${timeString}:00`) : null;
 
-    const venueName = formData.get("venueName") as string | null;
+    const venueName = formData.get("venueName") as string | null ?? "";
     const address = formData.get("address") as string | null;
     const rtRw = (formData.get("rtRw") as string | null) ?? "";
     const district = (formData.get("district") as string | null) ?? "";
@@ -80,13 +80,15 @@ const handleEventById = async (id: string) => {
     const googleMapUrl = (formData.get("googleMapUrl") as string | null) ?? "";
     const maxPax = Number(formData.get("maxPax"));
 
+    const description = formData.get("description") as string | null ?? "";
 
 
 
-    if (!name || !date || !time || !venueName || !address || !maxPax || isNaN(maxPax)) {
+
+    if (!name || !date || !time || !address || !maxPax || isNaN(maxPax)) {
       setAlert({
         type: "error",
-        message: "Name, Date, Time, Venue Name, Address, Max Pax is required",
+        message: "Name, Date, Time, Address, Max Pax is required",
       });
       setShowAlert(true);
       return;
@@ -98,6 +100,7 @@ const handleEventById = async (id: string) => {
       name,
       date,
       time,
+      description,
       venueName,
       address,
       rtRw,
@@ -113,6 +116,9 @@ const handleEventById = async (id: string) => {
   const { mutate: createEvent, isPending: creating } = api.event.create.useMutation({
     onSuccess: async () => {
       await refetch();
+      setAlert({ type: "success", message: "Event created successfully" });
+      setShowAlert(true);
+      await utils.event.getAll.invalidate(); // invalidate list
       router.push("/events");
     },
     onError: (err) => {
@@ -121,13 +127,14 @@ const handleEventById = async (id: string) => {
     },
   });
     const handleEvent = (formData: FormData) => {
+      
     const name = formData.get("name") as string | null;
     const dateString = formData.get("date") as string | null;
     const timeString = formData.get("time") as string | null;
     const date = dateString ? new Date(dateString) : null;
     const time = timeString ? new Date(`1970-01-01T${timeString}:00`) : null;
 
-    const venueName = formData.get("venueName") as string | null;
+    const venueName = formData.get("venueName") as string | null ?? "";
     const address = formData.get("address") as string | null;
     const rtRw = (formData.get("rtRw") as string | null) ?? "";
     const district = (formData.get("district") as string | null) ?? "";
@@ -136,10 +143,13 @@ const handleEventById = async (id: string) => {
     const googleMapUrl = (formData.get("googleMapUrl") as string | null) ?? "";
     const maxPax = Number(formData.get("maxPax"));
 
-    if (!name || !date || !time || !venueName || !address || !maxPax || isNaN(maxPax)) {
+    const description = formData.get("description") as string | null ?? "";
+
+    if (!name || !date || !time || !address || !maxPax || isNaN(maxPax)) {
       setAlert({
+        
         type: "error",
-        message: "Name, Date, Time, Venue Name, Address, Max Pax is required",
+        message: "Name, Date, Time, Address, Max Pax is required",
       });
       setShowAlert(true);
       return;
@@ -150,8 +160,9 @@ const handleEventById = async (id: string) => {
       name,
       date,
       time,
-      venueName,
       address,
+      description,
+      venueName,
       rtRw,
       district,
       subDistrict,

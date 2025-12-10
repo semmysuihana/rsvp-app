@@ -57,6 +57,7 @@ model Event {
   city         String
   googleMapUrl String
   maxPax       Int
+  description  String   @default("")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

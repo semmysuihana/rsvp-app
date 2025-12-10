@@ -1,23 +1,22 @@
 "use client";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FontAwesomeIcon, FontAwesomeLayers } from "@fortawesome/react-fontawesome";
 import {
   faEye,
   faEdit,
   faTrashCan,
   faPlus,
-  faPlusCircle
+  faPlusCircle,
+  faCalendarAlt,
+  faLocationDot,
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { useState, useMemo } from "react";
 import ModalDesign from "./modalDesign";
 import { useRouter } from "next/navigation";
 import CardContainer from "./cardContainer";
-interface DataItem {
-  id: string;
-  name: string;
-  createdAt: Date;
-  [key: string]: string | number | Date | null | undefined;
-}
+import { useRef, useEffect } from "react";
+import type { DataItem } from "~/types/eventType";
+
 
  type FieldValue = string | number | Date | null | undefined;
 
@@ -31,6 +30,17 @@ export default function CardList({name, data, link, onDelete, detailIdTo, displa
   const [nameModal, setNameModal] = useState("");
   const router = useRouter();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  console.log('modalOpen:', modalOpen);
+  const totalResponded = (item: DataItem) =>
+  item.capacity.confirmed +
+  item.capacity.waiting +
+  item.capacity.canceled;
+
+  const percent = (item: DataItem) =>
+  Math.round((totalResponded(item) / item.maxPax) * 100);
+
+const menuRef = useRef<HTMLDivElement>(null);
   const processedData = useMemo(() => {
     const temp = [...data];
 
@@ -82,18 +92,30 @@ if (sortBy === "date-newest") {
   return value.toString();
 }
 
+useEffect(() => {
+  function handleClickOutside(event: MouseEvent) {
+    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      setOpenMenuId(null);
+    }
+  }
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () => document.removeEventListener("mousedown", handleClickOutside);
+}, []);
+
 
  return (
   <>
     {modalOpen && (
+      <div onClick={() => setModalOpen(false)} >
       <ModalDesign isOpen={modalOpen} onClose={() => setModalOpen(false)}>
         <h2 className="text-lg font-semibold mb-4">
           Delete {name} with name: <span className="text-red-400">{nameModal}</span> ?
         </h2>
 
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()} >
           <button
-            className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 cursor-pointer"
+            className="px-4 py-2 bg-gray-300 rounded-md dark:text-gray-900 hover:bg-gray-500 hover:text-white cursor-pointer"
             onClick={() => setModalOpen(false)}
           >
             Cancel
@@ -109,21 +131,15 @@ if (sortBy === "date-newest") {
           </button>
         </div>
       </ModalDesign>
+      </div>
     )}
 
-    <div className="bg-white/5 backdrop-blur-lg shadow-lg rounded-2xl border border-white/10 p-6 space-y-6">
+    <div className="bg-white dark:bg-white/5 backdrop-blur-lg shadow-lg rounded-2xl border border-gray-200 dark:border-white/10 p-6 space-y-6">
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-white capitalize">{name} List</h2>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white capitalize">{name} List</h2>
 
-        <Link
-          href={`${link}/create`}
-          className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-white text-sm font-medium flex items-center gap-2 shadow-md"
-        >
-          <FontAwesomeIcon icon={faPlusCircle} className="w-4 h-4" />
-          Create New
-        </Link>
       </div>
 
       {/* Filter Controls */}
@@ -132,12 +148,12 @@ if (sortBy === "date-newest") {
           type="text"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="px-3 py-2 bg-white/10 border border-white/10 rounded-md text-white text-sm w-full"
+          className="px-3 py-2 bg-gray-100 dark:bg-white/10 border border-gray-300 dark:border-white/10 rounded-md text-gray-800 dark:text-white text-sm w-full"
           placeholder={`Search ${name} by name...`}
         />
 
         <select
-          className="bg-white/10 text-sm p-2 rounded-md border border-white/10 text-white"
+          className="bg-gray-100 dark:bg-white/10 text-sm p-2 rounded-md border border-gray-300 dark:border-white/10 text-gray-800 dark:text-white"
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
         >
@@ -147,7 +163,7 @@ if (sortBy === "date-newest") {
         </select>
 
         <select
-          className="bg-white/10 text-sm p-2 rounded-md border border-white/10 text-white"
+          className="bg-gray-100 dark:bg-white/10 text-sm p-2 rounded-md border border-gray-300 dark:border-white/10 text-gray-800 dark:text-white"
           value={pageSize}
           onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
         >
@@ -157,57 +173,163 @@ if (sortBy === "date-newest") {
           <option value={50} className="text-black">Show 50</option>
         </select>
       </div>
-
+      {/* legend information */}
+      <div className="flex justify-items-start gap-4">
+        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
+          <div className="w-4 h-4 bg-green-400 rounded"></div>
+          <span>Confirmed</span>
+        </div>
+        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
+          <div className="w-4 h-4 bg-yellow-400 rounded"></div>
+          <span>Waiting</span>
+        </div>
+        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
+          <div className="w-4 h-4 bg-red-400 rounded"></div>
+          <span>Canceled</span>
+        </div>
+      </div>
       {/* Card List */}
-      <CardContainer cols={2}>
+      <CardContainer cols={3}>
         {displayedData.map((item) => (
-          <div
-            key={item.id}
-            className="relative bg-white/10 rounded-xl p-4 border border-white/10 shadow-lg backdrop-blur-md transition hover:shadow-2xl hover:scale-[1.01]"
-          >
-            {/* Action Buttons Top-Right */}
-            <div className="absolute top-3 right-3 flex gap-3 opacity-80">
-              {detailIdTo && (
-                <button
-                  title="Add"
-                  onClick={() => router.push(`${link}/${item.id}/${detailIdTo}`)}
-                  className="text-green-400 hover:text-green-300"
-                >
-                  <FontAwesomeIcon icon={faPlus} />
-                </button>
-              )}
-              <button title="Details" onClick={() => router.push(`${link}/${item.id}`)} className="text-white hover:text-gray-300">
-                <FontAwesomeIcon icon={faEye} />
-              </button>
-              <button title="Edit" onClick={() => router.push(`${link}/${item.id}/edit`)} className="text-blue-400 hover:text-blue-300">
-                <FontAwesomeIcon icon={faEdit} />
-              </button>
-              <button
-                title="Delete"
-                onClick={() => { 
-                  setDeleteId(item.id); 
-                  setModalOpen(true);
-                  setNameModal(item.name);
-                }}
-                className="text-red-400 hover:text-red-300"
-              >
-                <FontAwesomeIcon icon={faTrashCan} />
-              </button>
-            </div>
+  <div
+    key={item.id}
+    onClick={(e) => e.stopPropagation()}
+    className="relative rounded-2xl overflow-hidden shadow-lg bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 backdrop-blur-xl transition hover:scale-[1.01]"
+  >
+    {/* Header Color */}
+    <div className="bg-gradient-to-r from-purple-600 to-fuchsia-600 p-4 text-white">
+      <h3 className="font-semibold text-lg">{item.name}</h3>
+    </div>
 
-            {/* Display Fields */}
-            {display?.map((field) => (
-              <p className="text-gray-300 text-sm mt-1" key={field}>
-                <span className="capitalize">{field.replace(/([A-Z])/g, " $1")}: </span>
-                <span className="text-white">{formatValue(item[field], field)}</span>
-              </p>
-            ))}
-          </div>
-        ))}
+    <div className="p-4 space-y-3">
+
+      {/* Date & Time */}
+      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
+        <FontAwesomeLayers className="text-base">
+          <FontAwesomeIcon icon={faCalendarAlt} />
+        </FontAwesomeLayers>
+        <span>{formatValue(item.date, "date")} - {formatValue(item.time, "time")}</span>
+      </div>
+
+      {/* Location */}
+      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
+        <FontAwesomeLayers className="text-base">
+          <FontAwesomeIcon icon={faLocationDot} />
+        </FontAwesomeLayers>
+        <span>{item.address}</span>
+      </div>
+
+      {/* Capacity Progress */}
+  <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-1">
+    <span>Capacity</span>
+    <span className="text-gray-800 dark:text-white">
+      {totalResponded(item)} / {item.maxPax}
+    </span>
+  </div>
+
+  {/* Progress Bar Wrapper */}
+  <div className="w-full h-2 rounded-full bg-gray-200 dark:bg-white/20 flex overflow-hidden">
+
+    {/* Confirmed */}
+    <div
+      className="h-2 bg-green-400"
+      style={{
+        width: `${(item.capacity.confirmed / item.maxPax) * 100}%`,
+      }}
+    />
+
+    {/* Waiting */}
+    <div
+      className="h-2 bg-yellow-400"
+      style={{
+        width: `${(item.capacity.waiting / item.maxPax) * 100}%`,
+      }}
+    />
+
+    {/* Canceled */}
+    <div
+      className="h-2 bg-red-400"
+      style={{
+        width: `${(item.capacity.canceled / item.maxPax) * 100}%`,
+      }}
+    />
+  </div>
+
+  <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
+    {percent(item)}% Responded
+  </p>
+
+      {/* Status Buttons
+      <div className="flex flex-wrap gap-2">
+        <button className="px-3 py-1 rounded-md text-xs bg-green-600/80 hover:bg-green-600 text-white font-medium">
+          CONFIRM
+        </button>
+        <button className="px-3 py-1 rounded-md text-xs bg-yellow-500/50 hover:bg-yellow-500/70 text-white font-medium">
+          WAITING
+        </button>
+        <button className="px-3 py-1 rounded-md text-xs bg-red-600/40 hover:bg-red-600/60 text-white font-medium">
+          CANCEL
+        </button>
+      </div> */}
+    </div>
+
+    {/* Action Menu */}
+<div className="absolute top-3 right-3">
+
+  {/* Button titik tiga */}
+  <button
+    onClick={(e) => {
+      setOpenMenuId(openMenuId === item.id ? null : item.id);
+    }}
+    className="text-white hover:text-gray-200 p-1"
+  >
+    <span className="text-xl font-bold">⋮</span>
+  </button>
+
+  {/* Dropdown menu */}
+  {openMenuId === item.id && (
+    <div ref={menuRef} className="absolute right-0 mt-2 bg-white text-black dark:text-white dark:bg-gray-800 rounded-lg shadow-xl w-32 py-2 z-50"
+    onClick={(e) => e.stopPropagation()} >
+      <button
+        onClick={(e) => {
+          router.push(`${link}/${item.id}`)}}
+        className="block w-full px-4 py-2 text-left hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+      >
+        Details
+      </button>
+
+      <button
+        onClick={(e) => {
+          router.push(`${link}/${item.id}/edit`)}}
+        className="block w-full px-4 py-2 text-left hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+      >
+        Edit
+      </button>
+
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setDeleteId(item.id);
+          setModalOpen(true);
+          setNameModal(item.name);
+          setOpenMenuId(null);
+        }}
+        className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+      >
+        Delete
+      </button>
+    </div>
+  )}
+</div>
+
+
+  </div>
+))}
+
       </CardContainer>
 
       {/* Pagination */}
-      <div className="flex justify-between items-center text-sm text-gray-300">
+      <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-300">
         <span>
           Showing {(page - 1) * pageSize + 1}-
           {Math.min(page * pageSize, processedData.length)} of {processedData.length}
@@ -217,14 +339,14 @@ if (sortBy === "date-newest") {
           <button
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}
-            className="px-4 py-1 rounded-md bg-white/10 border border-white/10 disabled:opacity-40"
+            className="px-4 py-1 rounded-md bg-gray-100 dark:bg-white/10 border border-gray-300 dark:border-white/10 disabled:opacity-40"
           >
             Prev
           </button>
           <button
             disabled={page === totalPages}
             onClick={() => setPage((p) => p + 1)}
-            className="px-4 py-1 rounded-md bg-white/10 border border-white/10 disabled:opacity-40"
+            className="px-4 py-1 rounded-md bg-gray-100 dark:bg-white/10 border border-gray-300 dark:border-white/10 disabled:opacity-40"
           >
             Next
           </button>

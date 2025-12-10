@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRegister } from "../utils/actionRegister";
-import Loading from "../component/loading";
-import Alert from "../component/alert";
+import Loading from "../../component/loading";
+import Alert from "../../component/alert";
 import FormSetting from "~/component/formSetting";
 import type { Field } from "~/types/field";
 import Turnstile from "react-turnstile";
@@ -48,7 +48,8 @@ export default function Register() {
   };
 
   return (
-    <>
+     <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center px-4">
+
       {loading && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <Loading />
@@ -59,25 +60,19 @@ export default function Register() {
             <Alert alert={alert} setShowAlert={setShowAlert} />
           </div>
         )}
-
-      <div className="relative min-h-screen flex items-center justify-center px-4 py-12
-        bg-gradient-to-br from-gray-100 to-gray-300
-        dark:from-gray-900 dark:to-gray-950 transition-colors duration-300">
-
-      
-
+    {/* CARD REGISTER */}
         <div
   className="relative w-full max-w-md md:max-w-xl lg:max-w-2xl
-  bg-white/10 dark:bg-black/30 
-  backdrop-blur-lg p-8 rounded-3xl shadow-2xl
+  bg-white dark:bg-gray-800 
+  backdrop-blur-lg p-8 rounded-xl shadow-2xl
   border border-white/20 dark:border-white/10
-  transition duration-300 ease-in-out">
+  transition duration-300 ease-in-out my-4">
 
 
           <div className="flex flex-col items-center mb-6">
             <Image src="/rsvp.svg" alt="Logo" width={60} height={60} className="rounded-full" />
-            <h2 className="mt-4 text-3xl font-bold text-center text-black dark:text-white">Create Account</h2>
-            <p className="mt-1 text-sm text-center text-gray-600 dark:text-gray-300">
+            <h2 className="mt-3 text-lg font-bold text-gray-800 dark:text-white text-center">Create Account</h2>
+            <p className="mt-1 text-gray-500 dark:text-gray-400 text-xs text-center">
               Fill in your details to register
             </p>
           </div>
@@ -88,38 +83,39 @@ export default function Register() {
             </p>
           )}
 
-          <div className="mb-4 flex justify-center">
-            <div className="flex justify-center items-center h-[70px] w-full">
+           <div className="flex justify-center">
+            <div className="scale-[0.80] origin-top">
               <Turnstile
                 key={turnstileKey}
                 sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
                 onVerify={(token) => {
                   setTurnstileToken(token);
-                  setTurnstileError(null);
+                  setTurnstileError("");
                 }}
                 onError={() => {
-                  setTurnstileError("Turnstile verification failed. Please try again.");
-                  setTurnstileToken(null);
+                  setTurnstileError("Verification failed. Try again.");
+                  setTurnstileToken("");
                 }}
                 onExpire={() => {
-                  setTurnstileToken(null);
-                  setTurnstileError("Turnstile expired. Please verify again.");
+                  setTurnstileToken("");
+                  setTurnstileError("Expired. Verify again.");
                 }}
               />
             </div>
           </div>
-
           <FormSetting fields={fields} submitText="Register" onSubmit={onSubmit} cols={2} />
 
-          <div className="mt-6 text-center text-sm text-gray-700 dark:text-gray-300">
+          <div className="mt-4 mb-4 text-center text-xs text-gray-600 dark:text-gray-400">
             Already have an account?{" "}
-            <Link href="/login" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:text-indigo-800 dark:hover:text-white transition">
-              Sign In
-            </Link>
           </div>
+
+          <Link href="/login" className="text-center block">
+    <div className="w-full py-1.5 hover:bg-indigo-400 hover:text-white text-indigo-500 dark:text-indigo-400 border border-indigo-500 dark:border-indigo-400 text-center font-semibold rounded-lg transition-all text-sm shadow">
+      Sign In
+    </div>
+  </Link>
 
         </div>
       </div>
-    </>
   );
 }

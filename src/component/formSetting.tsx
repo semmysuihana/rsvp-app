@@ -6,7 +6,8 @@ import type { Field } from "../types/field";
 import CardContainer from "./cardContainer";
 import ModalDesign from "~/component/modalDesign";
 import { useState, useRef } from "react";
-
+import { T } from "node_modules/@upstash/redis/zmscore-DhpQcqpW.mjs";
+import TextareaForm from "~/component/textareaForm";
 interface Props {
   fields: Field[];
   submitText: string;
@@ -54,7 +55,7 @@ export default function FormSetting({ fields, submitText, onSubmit, cols = 1, mo
           e.preventDefault();
           onSubmit(new FormData(e.currentTarget));
         }}
-        className="space-y-5"
+        className="space-y-6"
       >
         <CardContainer cols={cols}>
           {fields.map((field) => {
@@ -70,6 +71,8 @@ export default function FormSetting({ fields, submitText, onSubmit, cols = 1, mo
                 return <InputForm key={field.name} {...field} />;
               case "select":
                 return <SelectForm key={field.name} {...field} />;
+              case "textarea":
+                return <TextareaForm key={field.name} {...field} />;
               default:
                 return null;
             }
@@ -80,7 +83,7 @@ export default function FormSetting({ fields, submitText, onSubmit, cols = 1, mo
           type={modal ? "button" : "submit"}
           onClick={modal ? () => setModalOpen(true) : undefined}
           className="
-            w-full py-2.5 font-semibold rounded-lg transition-all shadow-md
+            w-full py-1.5 font-semibold rounded-lg transition-all shadow-md
             bg-indigo-500 hover:bg-indigo-400 text-white
             dark:bg-indigo-600 dark:hover:bg-indigo-500
           "

@@ -15,7 +15,7 @@ export default function CardContainer({
   cols?: number;
 }) {
   return (
-    <div className={`grid gap-6 ${colClasses[cols] ?? colClasses[2]}`}>
+    <div className={`text-black dark:text-white grid gap-6 ${colClasses[cols] ?? colClasses[2]}`}>
       {children}
     </div>
   );

@@ -19,20 +19,17 @@ function normalizeHeader(value: unknown): string {
 // ----------------------
 // Create Context
 // ----------------------
-export const createTRPCContext = async () => {
+export const createTRPCContext = async (opts?: { headers?: Headers }) => {
   const session = await getServerSession(authOptions);
-  const h = await headers();
+  const h = opts?.headers ?? await headers();
 
-  const rawForwarded: unknown = h.get("x-forwarded-for");
-  const rawRealIp: unknown = h.get("x-real-ip");
-
-  const forwarded = normalizeHeader(rawForwarded);
-  const realIp = normalizeHeader(rawRealIp);
+  const rawForwarded = h.get("x-forwarded-for");
+  const rawRealIp = h.get("x-real-ip");
 
   const ip =
-    forwarded.split(",")[0]?.trim() ??
-    realIp.trim() ??
-    "127.0.0.1";
+  rawForwarded?.split(",")[0]?.trim() ??
+  rawRealIp?.trim() ??
+  "127.0.0.1";
 
   return {
     db,
@@ -40,6 +37,7 @@ export const createTRPCContext = async () => {
     ip,
   };
 };
+
 
 // ----------------------
 // Init tRPC — HARUS sebelum middleware & procedure lain

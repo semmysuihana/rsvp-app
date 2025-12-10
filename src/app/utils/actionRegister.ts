@@ -3,7 +3,7 @@
 import { api } from "~/trpc/react";
 import { useState } from "react";
 import type { Alert } from "~/types/auth";
-
+import { useRouter } from "next/navigation";
 export enum Gender {
   MALE = "MALE",
   FEMALE = "FEMALE",
@@ -26,12 +26,13 @@ export function useRegister() {
   const [showAlert, setShowAlert] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [resetTurnstile, setResetTurnstile] = useState<(() => void) | null>(null);
-
+  const router = useRouter();
   const register = api.register.create.useMutation({
     onSuccess: () => {
       setAlert({ type: "success", message: "Register berhasil" });
       setShowAlert(true);
       setLoading(false);
+      router.push("/login");
     },
     onError: (err) => {
       setAlert({ type: "error", message: err.message });
