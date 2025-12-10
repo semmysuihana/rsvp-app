@@ -92,13 +92,13 @@ export default function Guest() {
 
 
         {/* ===== Guest List Card ===== */}
-        <CardList
+        {/* <CardList
           name="guest"
           data={guests}
           link={`/events/${eventId}/guest`}
           onDelete={handleDeleteGuest}
           display={["name", "phone", "rsvpStatus", "pax"]}
-        />
+        /> */}
       </PageContainer>
     </>
   );

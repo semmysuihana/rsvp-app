@@ -108,7 +108,7 @@ return(
   Back
 </Link>
 
-    <FormSetting fields={fields} submitText="Create" onSubmit={handleAddGuest} cols={2} />
+    <FormSetting fields={fields} submitText="Create" onSubmit={(formData) => handleAddGuest(eventId, formData)} cols={2} />
     </>
 ) : (
   <div className="bg-gray-800/60 border border-gray-700 backdrop-blur-md rounded-xl p-5 mb-6 shadow-lg">

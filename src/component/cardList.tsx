@@ -31,7 +31,6 @@ export default function CardList({name, data, link, onDelete, detailIdTo, displa
   const router = useRouter();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  console.log('modalOpen:', modalOpen);
   const totalResponded = (item: DataItem) =>
   item.capacity.confirmed +
   item.capacity.waiting +
