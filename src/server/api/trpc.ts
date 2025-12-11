@@ -1,35 +1,27 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "~/app/api/auth/[...nextauth]/route";
+import { authOptions } from "~/server/auth";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 import { db } from "~/server/db";
-import { headers } from "next/headers";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
 // ----------------------
-// Helper
-// ----------------------
-function normalizeHeader(value: unknown): string {
-  if (typeof value !== "string") return "";
-  return value;
-}
-
-// ----------------------
 // Create Context
 // ----------------------
+
 export const createTRPCContext = async (opts?: { headers?: Headers }) => {
   const session = await getServerSession(authOptions);
-  const h = opts?.headers ?? await headers();
 
-  const rawForwarded = h.get("x-forwarded-for");
-  const rawRealIp = h.get("x-real-ip");
-
-  const ip =
-  rawForwarded?.split(",")[0]?.trim() ??
-  rawRealIp?.trim() ??
-  "127.0.0.1";
+  // Get IP from headers if available
+  let ip = "127.0.0.1";
+  if (opts?.headers) {
+    const rawForwarded = opts.headers.get("x-forwarded-for");
+    const rawRealIp = opts.headers.get("x-real-ip");
+    
+    ip = rawForwarded?.split(",")[0]?.trim() ?? rawRealIp?.trim() ?? "127.0.0.1";
+  }
 
   return {
     db,
@@ -37,6 +29,7 @@ export const createTRPCContext = async (opts?: { headers?: Headers }) => {
     ip,
   };
 };
+
 
 
 // ----------------------

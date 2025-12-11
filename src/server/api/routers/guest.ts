@@ -1,12 +1,15 @@
+"use client";
+
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { db } from "~/server/db";
+import type { Event as PrismaEvent, Guest as PrismaGuest } from "../../../../generated/prisma";
 
 // =========================
-// ZOD SCHEMAS
+// Zod Schemas
 // =========================
-const guestSchema = z.object({
+export const guestSchema = z.object({
   id: z.string(),
   eventId: z.string(),
   name: z.string(),
@@ -22,7 +25,7 @@ const guestSchema = z.object({
   updatedAt: z.date(),
 });
 
-const eventSchema = z.object({
+export const eventSchema = z.object({
   id: z.string(),
   userId: z.string(),
   name: z.string(),
@@ -41,82 +44,80 @@ const eventSchema = z.object({
   guests: z.array(guestSchema).optional(),
 });
 
+// Schema guest dengan include event
+const guestWithEventSchema = guestSchema.extend({ event: eventSchema });
+
 // =========================
-// ROUTER
+// Guest Router
 // =========================
 export const guestRouter = createTRPCRouter({
-  // GET EVENT WITH GUESTS (by eventId)
+  // GET EVENT WITH GUESTS BY eventId
   getEventWithGuests: protectedProcedure
     .input(z.string())
-    .output(eventSchema.nullable()) // sudah termasuk guests array
+    .output(eventSchema.nullable())
     .query(async ({ ctx, input }) => {
       const userId = ctx.session?.user.id;
 
-      const event = await db.event.findUnique({
+      const eventData = await db.event.findUnique({
         where: { id: input },
         include: { guests: true },
-      });
+      }) as (PrismaEvent & { guests: PrismaGuest[] }) | null;
 
-      if (!event || event.userId !== userId) {
-        return null;
-      }
+      if (!eventData || eventData.userId !== userId) return null;
 
-      return eventSchema.parse(event); // guests sudah ada
+      return eventSchema.parse(eventData);
     }),
 
   // GET GUEST BY ID
   getById: protectedProcedure
     .input(z.string())
-    .output(guestSchema.extend({ event: eventSchema }).nullable())
+    .output(guestWithEventSchema.nullable())
     .query(async ({ ctx, input }) => {
       const userId = ctx.session?.user.id;
 
-      const guest = await db.guest.findUnique({
+      const guestData = await db.guest.findUnique({
         where: { id: input },
         include: { event: true },
-      });
+      }) as (PrismaGuest & { event: PrismaEvent }) | null;
 
-      if (!guest) {
-        return null;
-      }
+      if (!guestData) return null;
 
-      // Validasi kepemilikan
-      if (guest.event.userId !== userId) {
+      if (guestData.event.userId !== userId) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You don't have permission to view this guest",
         });
       }
 
-      return guest;
+      return guestWithEventSchema.parse(guestData);
     }),
 
-    delete: protectedProcedure
-  .input(z.string())
-  .mutation(async ({ ctx, input }) => {
-    const userId = ctx.session?.user.id;
+  // DELETE GUEST
+  delete: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session?.user.id;
 
-    const guest = await db.guest.findUnique({
-      where: { id: input },
-      include: { event: true }, // <-- ambil event sekaligus
-    });
+      const guestData = await db.guest.findUnique({
+        where: { id: input },
+        include: { event: true },
+      }) as (PrismaGuest & { event: PrismaEvent }) | null;
 
-    if (!guest) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "Guest not found" });
-    }
+      if (!guestData) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Guest not found" });
+      }
 
-    // Validasi kepemilikan
-    if (guest.event.userId !== userId) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "You don't have permission to delete this guest",
-      });
-    }
+      if (guestData.event.userId !== userId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You don't have permission to delete this guest",
+        });
+      }
 
-    await db.guest.delete({ where: { id: input } });
+      await db.guest.delete({ where: { id: input } });
 
-    return { message: "Guest deleted successfully" };
-  }),
+      return { message: "Guest deleted successfully" };
+    }),
 
   // CREATE GUEST
   create: protectedProcedure
@@ -135,23 +136,22 @@ export const guestRouter = createTRPCRouter({
       const userId = ctx.session?.user.id;
 
       // Verify event ownership
-      const event = await db.event.findUnique({
+      const eventData = await db.event.findUnique({
         where: { id: input.eventId },
       });
 
-      if (!event) {
+      if (!eventData) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
       }
 
-      if (event.userId !== userId) {
+      if (eventData.userId !== userId) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You don't have permission to add guests to this event",
         });
       }
 
-      // Create guest
-      const guest = await db.guest.create({
+      const guestData = await db.guest.create({
         data: {
           eventId: input.eventId,
           name: input.name,
@@ -165,13 +165,10 @@ export const guestRouter = createTRPCRouter({
         },
       });
 
-      return guest;
+      return guestSchema.parse(guestData);
     }),
-
-
 });
 
-
 export type GuestRouter = typeof guestRouter;
-export type EventSchema = z.infer<typeof eventSchema>;
 export type GuestSchema = z.infer<typeof guestSchema>;
+export type EventSchema = z.infer<typeof eventSchema>;

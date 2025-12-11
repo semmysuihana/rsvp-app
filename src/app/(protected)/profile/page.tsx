@@ -13,7 +13,6 @@ import type { Field } from "~/types/field";
 import ModalDesign from "~/component/modalDesign";
 import { useState } from "react";
 import SubcriptionPlan from "~/component/subcriptionPlan";
-import type { UserSubPlan } from "~/types/user"
 export default function ProfilePage() {
   const { profile, loading, alert, showAlert, setShowAlert, handleGetProfile, handleUpdate, handleUpdatePassword } = useProfile();
   const { data: session } = useSession();
@@ -80,7 +79,7 @@ export default function ProfilePage() {
     if (session?.user.id) {
       void handleGetProfile();
     }
-  }, [session?.user.id]);
+  }, [session?.user.id, handleGetProfile]);
   
   const onSubmit = async (formData: FormData) =>{
    await handleUpdate(formData);

@@ -11,7 +11,7 @@ import { useEvent } from "~/app/utils/actionEvent";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import TableList from "~/component/tableList";
-import type { DataItem,eventWithGuestItem, guestItem } from "~/types/eventType";
+import type { eventWithGuestItem } from "~/types/eventType";
 export default function DetailsPage() {
   const { eventById, loading, alert, showAlert, setShowAlert, handleEventById } = useEvent();
   const params = useParams();
@@ -19,14 +19,13 @@ export default function DetailsPage() {
   const eventId = params.id as string;
   useEffect(() => {
     if (eventId) void handleEventById(eventId);
-  }, [eventId]);
+  }, [eventId, handleEventById]);
   
   const totalPax =
     (eventById?.capacity?.confirmed ?? 0) +
     (eventById?.capacity?.waiting ?? 0) +
     (eventById?.capacity?.canceled ?? 0);
 
-  const percent = Math.round(((totalPax / (eventById?.maxPax ?? 1)) * 100));
 
   return (
     <>
@@ -142,13 +141,9 @@ border border-gray-200 dark:border-gray-700 rounded-xl p-6 transition-colors">
               <p className="text-lg font-semibold mb-4">Guest List</p>
 
               <TableList
-                name="guest"
                 data={eventById as eventWithGuestItem}
                 detailIdTo={eventById.id}
                 link={`/events/${eventById.id}/guest`}
-                onDelete={async (id: string) => {
-                  await handleEventById(eventById.id);
-                }}
                 display={["name", "email", "rsvpStatus"]}
               />
             </div>
@@ -162,7 +157,6 @@ border border-gray-200 dark:border-gray-700 rounded-xl p-6 transition-colors">
   );
 }
 function CapacityProgressBar({ confirmed, waiting, canceled, max } : { confirmed: number; waiting: number; canceled: number; max: number }) {
-  const total = confirmed + waiting + canceled;
 
   const percentConfirmed = (confirmed / max) * 100;
   const percentWaiting = (waiting / max) * 100;

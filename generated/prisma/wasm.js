@@ -93,9 +93,53 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.PostScalarFieldEnum = {
+exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  idCardNumber: 'idCardNumber',
+  birthDate: 'birthDate',
+  gender: 'gender',
+  phone: 'phone',
+  email: 'email',
+  username: 'username',
+  passwordHash: 'passwordHash',
+  subscriptionPlan: 'subscriptionPlan',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EventScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  date: 'date',
+  time: 'time',
+  venueName: 'venueName',
+  address: 'address',
+  rtRw: 'rtRw',
+  district: 'district',
+  subDistrict: 'subDistrict',
+  city: 'city',
+  googleMapUrl: 'googleMapUrl',
+  maxPax: 'maxPax',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GuestScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  name: 'name',
+  phone: 'phone',
+  email: 'email',
+  rsvpStatus: 'rsvpStatus',
+  notes: 'notes',
+  substituteName: 'substituteName',
+  pax: 'pax',
+  sendCount: 'sendCount',
+  maxSend: 'maxSend',
+  lastSendAt: 'lastSendAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -110,9 +154,31 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+exports.Gender = exports.$Enums.Gender = {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE'
+};
+
+exports.SubscriptionPlan = exports.$Enums.SubscriptionPlan = {
+  FREE: 'FREE',
+  BASIC: 'BASIC',
+  PRO: 'PRO'
+};
+
+exports.RSVPStatus = exports.$Enums.RSVPStatus = {
+  WAITING: 'WAITING',
+  CONFIRMED: 'CONFIRMED',
+  CANCELLED: 'CANCELLED'
+};
 
 exports.Prisma.ModelName = {
-  Post: 'Post'
+  User: 'User',
+  Event: 'Event',
+  Guest: 'Guest'
 };
 /**
  * Create the Client
@@ -125,7 +191,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\Merry\\Documents\\t3-rpsv-event\\rsvp-event\\generated\\prisma",
+      "value": "C:\\Users\\HYPE AMD\\Documents\\rsvp-semmy\\rsvp\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -139,7 +205,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\Merry\\Documents\\t3-rpsv-event\\rsvp-event\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\HYPE AMD\\Documents\\rsvp-semmy\\rsvp\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -161,13 +227,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Post {\n  id        Int      @id @default(autoincrement())\n  name      String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([name])\n}\n",
-  "inlineSchemaHash": "4dfee2d805d63053d5ae63a6ff65a5c68e353713bdd4147909d9158ea83d8e0f",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nenum Gender {\n  MALE\n  FEMALE\n}\n\nenum SubscriptionPlan {\n  FREE\n  BASIC\n  PRO\n}\n\nenum RSVPStatus {\n  WAITING\n  CONFIRMED\n  CANCELLED\n}\n\nmodel User {\n  id               String           @id @default(uuid())\n  name             String\n  idCardNumber     String           @unique\n  birthDate        DateTime\n  gender           Gender\n  phone            String           @unique\n  email            String           @unique\n  username         String           @unique\n  passwordHash     String\n  subscriptionPlan SubscriptionPlan @default(FREE)\n  createdAt        DateTime         @default(now())\n  updatedAt        DateTime         @updatedAt\n\n  // Relation\n  events Event[]\n}\n\nmodel Event {\n  id           String   @id @default(uuid())\n  userId       String\n  name         String\n  date         DateTime\n  time         DateTime\n  venueName    String\n  address      String\n  rtRw         String\n  district     String\n  subDistrict  String\n  city         String\n  googleMapUrl String\n  maxPax       Int\n  description  String   @default(\"\")\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n\n  // Relation FK\n  user   User    @relation(fields: [userId], references: [id], onDelete: Restrict)\n  guests Guest[]\n}\n\nmodel Guest {\n  id             String     @id @default(uuid())\n  eventId        String\n  name           String\n  phone          String\n  email          String     @default(\"\")\n  rsvpStatus     RSVPStatus @default(WAITING)\n  notes          String?\n  substituteName String?\n  pax            Int        @default(1)\n  sendCount      Int        @default(0)\n  maxSend        Int        @default(3)\n  lastSendAt     DateTime?\n  createdAt      DateTime   @default(now())\n  updatedAt      DateTime   @updatedAt\n\n  event Event @relation(fields: [eventId], references: [id], onDelete: Restrict)\n}\n",
+  "inlineSchemaHash": "9d73c33763163f3ced2bbf63dbf7c29d2a4b1102269fecbd25faae42aa13e71a",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"Post\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"idCardNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"birthDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"gender\",\"kind\":\"enum\",\"type\":\"Gender\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"passwordHash\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"subscriptionPlan\",\"kind\":\"enum\",\"type\":\"SubscriptionPlan\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"events\",\"kind\":\"object\",\"type\":\"Event\",\"relationName\":\"EventToUser\"}],\"dbName\":null},\"Event\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"date\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"time\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"venueName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"rtRw\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"district\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"subDistrict\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"city\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"googleMapUrl\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"maxPax\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"EventToUser\"},{\"name\":\"guests\",\"kind\":\"object\",\"type\":\"Guest\",\"relationName\":\"EventToGuest\"}],\"dbName\":null},\"Guest\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"eventId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"rsvpStatus\",\"kind\":\"enum\",\"type\":\"RSVPStatus\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"substituteName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"pax\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"sendCount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"maxSend\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"lastSendAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"event\",\"kind\":\"object\",\"type\":\"Event\",\"relationName\":\"EventToGuest\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

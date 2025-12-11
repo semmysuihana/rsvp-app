@@ -121,9 +121,53 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.PostScalarFieldEnum = {
+exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  idCardNumber: 'idCardNumber',
+  birthDate: 'birthDate',
+  gender: 'gender',
+  phone: 'phone',
+  email: 'email',
+  username: 'username',
+  passwordHash: 'passwordHash',
+  subscriptionPlan: 'subscriptionPlan',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EventScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  date: 'date',
+  time: 'time',
+  venueName: 'venueName',
+  address: 'address',
+  rtRw: 'rtRw',
+  district: 'district',
+  subDistrict: 'subDistrict',
+  city: 'city',
+  googleMapUrl: 'googleMapUrl',
+  maxPax: 'maxPax',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GuestScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  name: 'name',
+  phone: 'phone',
+  email: 'email',
+  rsvpStatus: 'rsvpStatus',
+  notes: 'notes',
+  substituteName: 'substituteName',
+  pax: 'pax',
+  sendCount: 'sendCount',
+  maxSend: 'maxSend',
+  lastSendAt: 'lastSendAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -138,9 +182,31 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+exports.Gender = exports.$Enums.Gender = {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE'
+};
+
+exports.SubscriptionPlan = exports.$Enums.SubscriptionPlan = {
+  FREE: 'FREE',
+  BASIC: 'BASIC',
+  PRO: 'PRO'
+};
+
+exports.RSVPStatus = exports.$Enums.RSVPStatus = {
+  WAITING: 'WAITING',
+  CONFIRMED: 'CONFIRMED',
+  CANCELLED: 'CANCELLED'
+};
 
 exports.Prisma.ModelName = {
-  Post: 'Post'
+  User: 'User',
+  Event: 'Event',
+  Guest: 'Guest'
 };
 
 /**

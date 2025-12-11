@@ -3,7 +3,6 @@
 import { api } from "~/trpc/react";
 import { useState } from "react";
 import type { Alert } from "~/types/auth";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 export function useProfile() {

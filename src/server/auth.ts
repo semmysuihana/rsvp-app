@@ -1,12 +1,33 @@
-// src/server/auth.ts
-
-import type { NextAuthOptions } from "next-auth";
+import type { NextAuthOptions, User as NextAuthUser } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "~/server/db";
-import type { User } from "next-auth";
 import type { TurnstileResponse } from "~/types/auth";
 
+// =======================
+// Tipe untuk authorize
+// =======================
+type Credentials = {
+  username: string;
+  password: string;
+  turnstile: string;
+};
+
+// =======================
+// Tipe user dari database
+// =======================
+type AuthUser = {
+  id: string;
+  username: string;
+  name: string | null;
+  email: string | null;
+  passwordHash: string;
+  subscriptionPlan: string | null;
+};
+
+// =======================
+// NextAuth Options
+// =======================
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
@@ -19,7 +40,7 @@ export const authOptions: NextAuthOptions = {
         turnstile: {},
       },
 
-      async authorize(credentials) {
+      async authorize(credentials: Credentials | undefined) {
         if (
           !credentials?.username ||
           !credentials?.password ||
@@ -28,24 +49,32 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        const username = credentials.username;
+        const password = credentials.password;
+        const turnstileToken = credentials.turnstile;
+
+        // =======================
         // VERIFY TURNSTILE
+        // =======================
         const formData = new FormData();
         formData.append("secret", process.env.TURNSTILE_SECRET_KEY!);
-        formData.append("response", credentials.turnstile);
+        formData.append("response", turnstileToken);
 
-        const verify = await fetch(
+        const verifyResponse = await fetch(
           "https://challenges.cloudflare.com/turnstile/v0/siteverify",
           { method: "POST", body: formData }
         );
 
-        if (!verify.ok) return null;
+        if (!verifyResponse.ok) return null;
 
-        const data = (await verify.json()) as TurnstileResponse;
+        const data = (await verifyResponse.json()) as TurnstileResponse;
         if (!data.success) return null;
 
-        // USER CHECK
-        const user = await db.user.findUnique({
-          where: { username: credentials.username },
+        // =======================
+        // USER CHECK DATABASE
+        // =======================
+        const user: AuthUser | null = await db.user.findUnique({
+          where: { username },
           select: {
             id: true,
             username: true,
@@ -58,12 +87,12 @@ export const authOptions: NextAuthOptions = {
 
         if (!user) return null;
 
-        const ok = await bcrypt.compare(
-          credentials.password,
-          user.passwordHash
-        );
-        if (!ok) return null;
+        const passwordMatches = await bcrypt.compare(password, user.passwordHash);
+        if (!passwordMatches) return null;
 
+        // =======================
+        // RETURN USER
+        // =======================
         return {
           id: user.id,
           username: user.username,
@@ -77,14 +106,14 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.user = user;
+        token.user = user as NextAuthUser;
       }
       return token;
     },
 
     async session({ session, token }) {
       if (token.user) {
-        session.user = token.user as User;
+        session.user = token.user as NextAuthUser;
       }
       return session;
     },

@@ -6,7 +6,6 @@ import type { Field } from "../types/field";
 import CardContainer from "./cardContainer";
 import ModalDesign from "~/component/modalDesign";
 import { useState, useRef } from "react";
-import { T } from "node_modules/@upstash/redis/zmscore-DhpQcqpW.mjs";
 import TextareaForm from "~/component/textareaForm";
 interface Props {
   fields: Field[];

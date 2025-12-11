@@ -27,6 +27,7 @@ export interface guestItem  {
   eventId: string;
   name: string;
   phone: string;
+  email: string;
   rsvpStatus: "WAITING" | "CONFIRMED" | "CANCELLED";
   notes?: string | null;
   substituteName?: string | null;

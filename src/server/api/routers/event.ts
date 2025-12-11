@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { db } from "~/server/db";
+import type { Event as PrismaEvent, Guest as PrismaGuest } from "../../../../generated/prisma";
 
 // =========================
 // Zod Schema
@@ -21,6 +22,7 @@ const guestSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date(),
 });
+
 const eventSchema = z.object({
   id: z.string(),
   userId: z.string(),
@@ -36,7 +38,6 @@ const eventSchema = z.object({
   googleMapUrl: z.string(),
   maxPax: z.number(),
   description: z.string(),  
-  
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -56,175 +57,127 @@ const eventSchemaWithGuestsCapacity = eventSchemaWithCapacity.extend({
 // =========================
 // Type Definitions
 // =========================
-type Guest = z.infer<typeof guestSchema>;
-type Event = z.infer<typeof eventSchema>;
-type EventWithCapacity = z.infer<typeof eventSchemaWithCapacity>;
 type EventWithGuestsCapacity = z.infer<typeof eventSchemaWithGuestsCapacity>;
 
 // =========================
 export const eventRouter = createTRPCRouter({
   // GET ALL
+  getAll: protectedProcedure
+    .output(z.array(eventSchemaWithGuestsCapacity))
+    .query(async ({ ctx }) => {
+      const userId = ctx.session?.user.id;
 
-getAll: protectedProcedure
-  .output(z.array(eventSchemaWithGuestsCapacity))
-  .query(async ({ ctx }) => {
-    const userId = ctx.session?.user.id;
+      const events = await db.event.findMany({ where: { userId } });
 
-    const events = await db.event.findMany({
-      where: { userId },
-    });
+      const results: EventWithGuestsCapacity[] = await Promise.all(
+        events.map(async (event) => {
+          const [confirmed, waiting, canceled] = await Promise.all([
+            db.guest.aggregate({
+              _sum: { pax: true },
+              where: { eventId: event.id, rsvpStatus: "CONFIRMED" },
+            }),
+            db.guest.aggregate({
+              _sum: { pax: true },
+              where: { eventId: event.id, rsvpStatus: "WAITING" },
+            }),
+            db.guest.aggregate({
+              _sum: { pax: true },
+              where: { eventId: event.id, rsvpStatus: "CANCELLED" },
+            }),
+          ]);
 
-    // Hitung RSVPs dari tabel guest
-    const results: EventWithGuestsCapacity[] = await Promise.all(
-  events.map(async (event: Event): Promise<EventWithGuestsCapacity> => {
-    const [confirmed, waiting, canceled] = await Promise.all([
-      db.guest.aggregate({
-        _sum: { pax: true },
-        where: { eventId: event.id, rsvpStatus: "CONFIRMED" },
-      }),
-      db.guest.aggregate({
-        _sum: { pax: true },
-        where: { eventId: event.id, rsvpStatus: "WAITING" },
-      }),
-      db.guest.aggregate({
-        _sum: { pax: true },
-        where: { eventId: event.id, rsvpStatus: "CANCELLED" },
-      }),
-    ]);
+          return {
+            ...event,
+            capacity: {
+              confirmed: confirmed._sum.pax ?? 0,
+              waiting: waiting._sum.pax ?? 0,
+              canceled: canceled._sum.pax ?? 0,
+            },
+          };
+        })
+      );
 
-    return {
-      ...event,
-      capacity: {
-        confirmed: confirmed._sum.pax ?? 0,
-        waiting: waiting._sum.pax ?? 0,
-        canceled: canceled._sum.pax ?? 0,
-      },
-    };
-  })
-);
-
-    return results;
-  }),
-
-
+      return results;
+    }),
 
   // GET BY ID
-getById: protectedProcedure
-  .input(z.string())
-  .output(eventSchemaWithGuestsCapacity.nullable())
-  .query(async ({ ctx, input }): Promise<EventWithGuestsCapacity | null> => {
-    const userId = ctx.session?.user.id;
+  getById: protectedProcedure
+    .input(z.string())
+    .output(eventSchemaWithGuestsCapacity.nullable())
+    .query(async ({ ctx, input }): Promise<EventWithGuestsCapacity | null> => {
+      const userId = ctx.session?.user.id;
 
-    const event = await db.event.findFirst({
-      where: { id: input, userId },
-      include: { guests: true },
-    });
+      const event = await db.event.findFirst({
+        where: { id: input, userId },
+        include: { guests: true },
+      }) as (PrismaEvent & { guests: PrismaGuest[] }) | null;
 
-    if (!event) return null;
+      if (!event) return null;
 
-    const [confirmed, waiting, canceled] = await Promise.all([
-  db.guest.aggregate({
-    _sum: { pax: true },
-    where: { eventId: input, rsvpStatus: "CONFIRMED" },
-  }),
-  db.guest.aggregate({
-    _sum: { pax: true },
-    where: { eventId: input, rsvpStatus: "WAITING" },
-  }),
-  db.guest.aggregate({
-    _sum: { pax: true },
-    where: { eventId: input, rsvpStatus: "CANCELLED" },
-  }),
-]);
+      const [confirmed, waiting, canceled] = await Promise.all([
+        db.guest.aggregate({
+          _sum: { pax: true },
+          where: { eventId: input, rsvpStatus: "CONFIRMED" },
+        }),
+        db.guest.aggregate({
+          _sum: { pax: true },
+          where: { eventId: input, rsvpStatus: "WAITING" },
+        }),
+        db.guest.aggregate({
+          _sum: { pax: true },
+          where: { eventId: input, rsvpStatus: "CANCELLED" },
+        }),
+      ]);
 
-const result: EventWithGuestsCapacity = {
-  ...event,
-  capacity: {
-    confirmed: confirmed._sum.pax ?? 0,
-    waiting: waiting._sum.pax ?? 0,
-    canceled: canceled._sum.pax ?? 0,
-  },
-};
-
-return result;
-  }),
-
-
+      return {
+        ...event,
+        capacity: {
+          confirmed: confirmed._sum.pax ?? 0,
+          waiting: waiting._sum.pax ?? 0,
+          canceled: canceled._sum.pax ?? 0,
+        },
+      };
+    }),
 
   // CREATE
   create: protectedProcedure
-    .input(
-      eventSchema.omit({ id: true, createdAt: true, updatedAt: true })
-    )
+    .input(eventSchema.omit({ id: true, createdAt: true, updatedAt: true }))
     .mutation(async ({ input }) => {
       const result = await db.event.create({ data: input });
-
-      return {
-        message: "Event created successfully",
-        data: result,
-      };
+      return { message: "Event created successfully", data: result };
     }),
 
   // UPDATE
   update: protectedProcedure
-    .input(
-      eventSchema.omit({ createdAt: true, updatedAt: true })
-    )
+    .input(eventSchema.omit({ createdAt: true, updatedAt: true }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session?.user.id;
 
-      // Cek apakah event milik user ini
-      const event: Event | null = await db.event.findUnique({ where: { id: input.id } });
-
-      if (!event) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
-      }
-
-      if (event.userId !== userId) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You don't have permission to update this event",
-        });
-      }
+      const event = await db.event.findUnique({ where: { id: input.id } });
+      if (!event) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+      if (event.userId !== userId)
+        throw new TRPCError({ code: "FORBIDDEN", message: "You don't have permission to update this event" });
 
       const { id, ...updateData } = input;
-      const result = await db.event.update({
-        where: { id },
-        data: updateData,
-      });
+      const result = await db.event.update({ where: { id }, data: updateData });
 
-      return {
-        message: "Event updated successfully",
-        data: result,
-      };
+      return { message: "Event updated successfully", data: result };
     }),
 
-    // DELETE
+  // DELETE
   delete: protectedProcedure
-  .input(z.string())
-  .mutation(async ({ ctx, input }) => {
-    const userId = ctx.session?.user.id;
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session?.user.id;
 
-    // Cek apakah event milik user ini
-    const event: Event | null = await db.event.findUnique({ where: { id: input } });
+      const event = await db.event.findUnique({ where: { id: input } });
+      if (!event) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+      if (event.userId !== userId)
+        throw new TRPCError({ code: "FORBIDDEN", message: "You don't have permission to delete this event" });
 
-    if (!event) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
-    }
-
-    if (event.userId !== userId) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "You don't have permission to delete this event",
-      });
-    }
-
-    const result = await db.event.delete({ where: { id: input } });
-
-    return {
-      message: "Event deleted successfully",
-      data: result,
-    };
-  }),
+      const result = await db.event.delete({ where: { id: input } });
+      return { message: "Event deleted successfully", data: result };
+    }),
 });
+
 export type EventRouter = typeof eventRouter;

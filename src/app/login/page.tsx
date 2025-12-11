@@ -116,7 +116,7 @@ return (
   <FormSetting fields={fields} submitText="Login" onSubmit={onSubmit} />
 
   <div className="mt-2 mb-2 text-center text-xs text-gray-600 dark:text-gray-400">
-    Don't have an account?
+    Dont have an account?
   </div>
 
   <Link href="/register" className="text-center block">

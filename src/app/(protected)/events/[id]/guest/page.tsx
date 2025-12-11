@@ -7,10 +7,9 @@ import { useEffect } from "react";
 import { useGuest } from "~/app/utils/actionGuest";
 import Loading from "~/component/loading";
 import Alert from "~/component/alert";
-import CardList from "~/component/cardList";
 
 export default function Guest() {
-  const { guests, eventById, loading, alert, showAlert, setShowAlert, handleGuestById, handleDeleteGuest } = useGuest();
+  const { guests, eventById, loading, alert, showAlert, setShowAlert, handleGuestById } = useGuest();
 
   const params = useParams();
   const eventId = params.id as string;

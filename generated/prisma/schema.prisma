@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -11,11 +8,79 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum Gender {
+  MALE
+  FEMALE
+}
 
-  @@index([name])
+enum SubscriptionPlan {
+  FREE
+  BASIC
+  PRO
+}
+
+enum RSVPStatus {
+  WAITING
+  CONFIRMED
+  CANCELLED
+}
+
+model User {
+  id               String           @id @default(uuid())
+  name             String
+  idCardNumber     String           @unique
+  birthDate        DateTime
+  gender           Gender
+  phone            String           @unique
+  email            String           @unique
+  username         String           @unique
+  passwordHash     String
+  subscriptionPlan SubscriptionPlan @default(FREE)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  // Relation
+  events Event[]
+}
+
+model Event {
+  id           String   @id @default(uuid())
+  userId       String
+  name         String
+  date         DateTime
+  time         DateTime
+  venueName    String
+  address      String
+  rtRw         String
+  district     String
+  subDistrict  String
+  city         String
+  googleMapUrl String
+  maxPax       Int
+  description  String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relation FK
+  user   User    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  guests Guest[]
+}
+
+model Guest {
+  id             String     @id @default(uuid())
+  eventId        String
+  name           String
+  phone          String
+  email          String     @default("")
+  rsvpStatus     RSVPStatus @default(WAITING)
+  notes          String?
+  substituteName String?
+  pax            Int        @default(1)
+  sendCount      Int        @default(0)
+  maxSend        Int        @default(3)
+  lastSendAt     DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Restrict)
 }

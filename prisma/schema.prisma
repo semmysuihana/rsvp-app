@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/app/generated/prisma"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -71,6 +71,7 @@ model Guest {
   eventId        String
   name           String
   phone          String
+  email          String       @default("")
   rsvpStatus     RSVPStatus   @default(WAITING)
   notes          String?
   substituteName String?

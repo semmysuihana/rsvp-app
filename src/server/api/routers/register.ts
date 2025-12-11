@@ -4,9 +4,6 @@ import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
 import { db } from "~/server/db";
 import { RegisterRateLimit } from "~/server/rateLimit";
-
-
-
 // ENUM gender untuk Prisma
 export enum Gender {
   MALE = "MALE",
@@ -63,26 +60,22 @@ export const registerRouter = createTRPCRouter({
         turnstileToken,
       } = input;
 
-       // ---------------------------------------
-      // VERIFY RATE LIMIT
-      // ---------------------------------------
-
-        const ip = ctx.ip ?? "anonymous";
-
+      // -----------------------------
       // RATE LIMIT
-      const result = await RegisterRateLimit.limit(ip);
+      // -----------------------------
+      const ip = ctx.ip ?? "anonymous";
+      const rateLimitResult = await RegisterRateLimit.limit(ip);
 
-      if (!result.success) {
+      if (!rateLimitResult.success) {
         throw new TRPCError({
           code: "TOO_MANY_REQUESTS",
           message: "Terlalu banyak percobaan registrasi. Coba lagi nanti.",
         });
       }
 
-
-      // ---------------------------------------
+      // -----------------------------
       // VERIFY TURNSTILE
-      // ---------------------------------------
+      // -----------------------------
       const verify = await verifyTurnstile(turnstileToken);
       if (!verify.success) {
         throw new TRPCError({
@@ -91,9 +84,9 @@ export const registerRouter = createTRPCRouter({
         });
       }
 
-      // ---------------------------------------
+      // -----------------------------
       // CEK DUPLIKASI USER
-      // ---------------------------------------
+      // -----------------------------
       const existing = await db.user.findFirst({
         where: {
           OR: [
@@ -112,17 +105,15 @@ export const registerRouter = createTRPCRouter({
         });
       }
 
-      // ---------------------------------------
+      // -----------------------------
       // HASH PASSWORD
-      // ---------------------------------------
+      // -----------------------------
       const passwordHash = await bcrypt.hash(password, 10);
 
-
-
-      // ---------------------------------------
+      // -----------------------------
       // SIMPAN DATA USER
-      // ---------------------------------------
-      await db.user.create({
+      // -----------------------------
+      const newUser = await db.user.create({
         data: {
           name,
           idCardNumber,
@@ -135,9 +126,11 @@ export const registerRouter = createTRPCRouter({
         },
       });
 
+      // return aman, tanpa akses `any`
       return {
         success: true,
         message: "Register berhasil",
+        userId: newUser.id,
       };
     }),
 });

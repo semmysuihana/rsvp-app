@@ -14,14 +14,14 @@ import FormSetting from "~/component/formSetting";
 import type { Field } from "~/types/field";
 import { useRef } from "react";
 import TableList from "~/component/tableList";
-import type { guestItem, eventWithGuestItem } from "~/types/eventType";
+import type { eventWithGuestItem } from "~/types/eventType";
 import ModalDesign from "~/component/modalDesign";
 import { useGuest } from "~/app/utils/actionGuest";
 export default function EditPage() {
   
   const [page, setPage] = useState<"edit" | "guest" | "preview">("edit");
   const { eventById, loading, alert, showAlert, setShowAlert, handleEventById, handleUpdate } = useEvent();
-  const { guests, eventById: guestById, loading: guestLoading, alert: guestAlert, showAlert: guestShowAlert, setShowAlert: setGuestShowAlert, handleAddGuest, handleGuestById } = useGuest();
+  const {  loading: guestLoading, alert: guestAlert, showAlert: guestShowAlert, setShowAlert: setGuestShowAlert, handleAddGuest, handleGuestById } = useGuest();
        const fields: Field[] = [
       { type: "text", name: "name", label: "Event Name", placeholder: "Enter event name", value: eventById?.name },
       { type: "date", name: "date", label: "Date", value: eventById?.date },
@@ -53,11 +53,10 @@ const activeRef =
 
   useEffect(() => {
     if (eventId) {
-      console.log("Fetching event ID:", eventId);
       void handleEventById(eventId);
       void handleGuestById(eventId);
     }
-  }, [eventId]);
+  }, [eventId, handleEventById, handleGuestById]);
 
   return (
     <>
@@ -132,8 +131,8 @@ const activeRef =
     <div
       className="absolute bottom-0 h-[2px] bg-indigo-600 transition-all duration-300"
       style={{
-        width: activeRef.current?.offsetWidth || 0,
-        transform: `translateX(${activeRef.current?.offsetLeft || 0}px)`
+        width: activeRef.current?.offsetWidth ?? 0,
+        transform: `translateX(${activeRef.current?.offsetLeft ?? 0}px)`
       }}
     />
   </div>
@@ -267,13 +266,9 @@ function GuestListPage({ eventById, handleAddGuest }: { eventById: eventWithGues
         </div>
       {eventById?.guests?.length ? (
        <TableList
-                       name="guest"
-                       data={eventById as eventWithGuestItem}
+                       data={eventById}
                        detailIdTo={eventById.id}
                        link={`/events/${eventById.id}/guest`}
-                       onDelete={async (id: string) => {
-                  console.log("Guest deleted:", id);
-                }}
                        display={["name", "email", "rsvpStatus"]}
                      />
       ) : (

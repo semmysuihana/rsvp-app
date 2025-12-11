@@ -11,7 +11,7 @@ const { data: session } = useSession();
   if (session?.user.id) {
     void handleGetProfile();
   }
-}, [session?.user.id]);
+}, [session?.user.id, handleGetProfile]);
 
   if (loading)
     return (

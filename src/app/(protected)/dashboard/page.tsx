@@ -1,4 +1,4 @@
-import PageHeader from "~/component/pageHeader";
+
 import PageContainer from "~/component/pageContainer";
 import CardContainer from "~/component/cardContainer";
 import CardDesign from "~/component/cardDesign";
@@ -12,7 +12,7 @@ export default async function Dashboard() {
         <div>
           <h1 className="text-2xl font-semibold">Welcome back</h1>
           <p className="text-sm opacity-90">
-            Here's what's happening with your events
+            Here is whats happening with your events
           </p>
         </div>
 
@@ -51,7 +51,7 @@ export default async function Dashboard() {
           </div>
           <p className="mt-4 font-medium">No Events Found</p>
           <p className="text-sm text-gray-500">
-            You haven't created any events yet. Start by creating your first event!
+            You havent created any events yet. Start by creating your first event!
           </p>
           <Link
             href="/events/create"

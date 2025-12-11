@@ -1,15 +1,9 @@
 "use client";
 import { FontAwesomeIcon, FontAwesomeLayers } from "@fortawesome/react-fontawesome";
 import {
-  faEye,
-  faEdit,
-  faTrashCan,
-  faPlus,
-  faPlusCircle,
   faCalendarAlt,
   faLocationDot,
 } from "@fortawesome/free-solid-svg-icons";
-import Link from "next/link";
 import { useState, useMemo } from "react";
 import ModalDesign from "./modalDesign";
 import { useRouter } from "next/navigation";
@@ -21,7 +15,7 @@ import type { DataItem } from "~/types/eventType";
  type FieldValue = string | number | Date | null | undefined;
 
 
-export default function CardList({name, data, link, onDelete, detailIdTo, display }: { name: string, data: DataItem[], link: string, onDelete: (id: string) => Promise<void>, detailIdTo?: string, display?: string[] }) {
+export default function CardList({name, data, link, onDelete}: { name: string, data: DataItem[], link: string, onDelete: (id: string) => Promise<void>, detailIdTo?: string, display?: string[] }) {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("date-newest");
   const [page, setPage] = useState(1);
@@ -277,7 +271,7 @@ useEffect(() => {
 
   {/* Button titik tiga */}
   <button
-    onClick={(e) => {
+    onClick={() => {
       setOpenMenuId(openMenuId === item.id ? null : item.id);
     }}
     className="text-white hover:text-gray-200 p-1"
@@ -290,7 +284,7 @@ useEffect(() => {
     <div ref={menuRef} className="absolute right-0 mt-2 bg-white text-black dark:text-white dark:bg-gray-800 rounded-lg shadow-xl w-32 py-2 z-50"
     onClick={(e) => e.stopPropagation()} >
       <button
-        onClick={(e) => {
+        onClick={() => {
           router.push(`${link}/${item.id}`)}}
         className="block w-full px-4 py-2 text-left hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
       >
@@ -298,7 +292,7 @@ useEffect(() => {
       </button>
 
       <button
-        onClick={(e) => {
+        onClick={() => {
           router.push(`${link}/${item.id}/edit`)}}
         className="block w-full px-4 py-2 text-left hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
       >

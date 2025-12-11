@@ -24,7 +24,8 @@ export default function ThemeToggle() {
     { value: "system", label: "System", icon: faDesktop },
   ];
 
-  const currentTheme = themes.find((t) => t.value === theme) ?? themes[0];
+  const currentTheme = themes.find((t) => t.value === theme)! ?? themes[0];
+
 
   return (
     <div className="fixed bottom-5 right-5 z-50">

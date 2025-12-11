@@ -3,11 +3,7 @@ import PageHeader from "~/component/pageHeader";
 import PageContainer from "~/component/pageContainer";
 import Loading from "~/component/loading";
 import Alert from "~/component/alert";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowAltCircleLeft, faPlus } from "@fortawesome/free-solid-svg-icons";
-import Link from "next/link";
 import { useEvent } from "~/app/utils/actionEvent";
-import FormSetting from "~/component/formSetting";
 import type { Field } from "~/types/field";
 import CreateEventTemplate from "~/component/eventCreate";
 export default function CreateEvent() {

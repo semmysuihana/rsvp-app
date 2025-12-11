@@ -18,7 +18,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { usePathname } from "next/navigation";
 import ModalDesign from "~/component/modalDesign";
-import { useEffect } from "react";
 
 export default function Sidebar() {
   const [open, setOpen] = useState(false);

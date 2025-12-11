@@ -7,23 +7,20 @@ import Alert from "~/component/alert";
 import CardList from "~/component/cardList";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowAltCircleLeft, faPlus, faList, faCreditCard } from "@fortawesome/free-solid-svg-icons";
-import Link from "next/link";
+import { faPlus, faList, faCreditCard } from "@fortawesome/free-solid-svg-icons";
+
 import type { DataItem } from "~/types/eventType";
 import CreateEventTemplate from "~/component/eventCreate";
 import type { Field } from "~/types/field";
-import { useSession } from "next-auth/react";
-import { useProfile } from "~/app/utils/actionProfile";
 import SubcriptionPlan from "~/component/subcriptionPlan";
 export default function Event() {
   const { events, loading, alert, showAlert, handleDelete, refetch, setShowAlert, handleEvent } = useEvent();
   const [page, setPage] = useState<"menu" | "create" | "subplan">("menu");
   
-    const { data: session } = useSession();
 
   useEffect(() => {
     void refetch();
-  }, []);
+  }, [refetch]);
 
   return (
     <>

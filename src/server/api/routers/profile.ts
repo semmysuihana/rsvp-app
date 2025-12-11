@@ -3,7 +3,6 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
-
 // =========================
 // Zod Schema
 // =========================
