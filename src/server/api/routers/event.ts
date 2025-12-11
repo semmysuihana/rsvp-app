@@ -49,6 +49,12 @@ const eventSchemaWithCapacity = eventSchema.extend({
     waiting: z.number(),
     canceled: z.number(),
   }),
+  stats: z.object({
+    confirmed: z.number(),
+    waiting: z.number(),
+    cancelled: z.number(),
+    totalGuests: z.number(),
+  }).optional(),
 });
 
 const eventSchemaWithGuestsCapacity = eventSchemaWithCapacity.extend({
@@ -62,6 +68,43 @@ type EventWithGuestsCapacity = z.infer<typeof eventSchemaWithGuestsCapacity>;
 
 // =========================
 export const eventRouter = createTRPCRouter({
+
+  // get stats
+  getAllWithStats: protectedProcedure
+    .output(z.array(eventSchemaWithCapacity))
+    .query(async ({ ctx }) => {
+      const userId = ctx.session?.user.id;
+
+      const events = await db.event.findMany({ where: { userId } });
+      const results: EventWithGuestsCapacity[] = await Promise.all(
+        events.map(async (event) => {
+          const [confirmed, waiting, canceled] = await Promise.all([
+            db.guest.aggregate({
+              _sum: { pax: true },
+              where: { eventId: event.id, rsvpStatus: "CONFIRMED" },
+            }),
+            db.guest.aggregate({
+              _sum: { pax: true },
+              where: { eventId: event.id, rsvpStatus: "WAITING" },
+            }),
+            db.guest.aggregate({
+              _sum: { pax: true },
+              where: { eventId: event.id, rsvpStatus: "CANCELLED" },
+            }),
+          ]);
+          return {
+            ...event,
+            capacity: {
+              confirmed: confirmed._sum.pax ?? 0,
+              waiting: waiting._sum.pax ?? 0,
+              canceled: canceled._sum.pax ?? 0,
+            },
+          };
+        })
+      );
+
+      return results;
+    }),
   // GET ALL
   getAll: protectedProcedure
     .output(z.array(eventSchemaWithGuestsCapacity))

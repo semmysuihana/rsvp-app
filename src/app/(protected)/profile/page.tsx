@@ -165,7 +165,6 @@ export default function ProfilePage() {
         <SubcriptionPlan />
       </div>
 
-
       {/* Update Form */}
       <div className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 shadow-xl rounded-2xl p-8 space-y-6">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Account Settings</h3>
