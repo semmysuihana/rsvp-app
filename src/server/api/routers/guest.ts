@@ -11,6 +11,7 @@ export const guestSchema = z.object({
   id: z.string(),
   eventId: z.string(),
   name: z.string(),
+  email: z.string().nullable().optional(),
   phone: z.string(),
   rsvpStatus: z.enum(["WAITING", "CONFIRMED", "CANCELLED"]),
   notes: z.string().nullable().optional(),
@@ -124,8 +125,10 @@ export const guestRouter = createTRPCRouter({
         eventId: z.string(),
         name: z.string().min(1, "Guest name is required"),
         phone: z.string().min(1, "Phone number is required"),
-        notes: z.string().optional(),
-        substituteName: z.string().optional(),
+        rsvpStatus: z.enum(["WAITING", "CONFIRMED", "CANCELLED"]).default("WAITING"),
+        email: z.string().nullable().optional(),
+        notes: z.string().nullable().optional(),
+        substituteName: z.string().nullable().optional(),
         pax: z.number().int().positive().default(1),
         maxSend: z.number().int().positive().default(3),
       })
@@ -154,11 +157,12 @@ export const guestRouter = createTRPCRouter({
           eventId: input.eventId,
           name: input.name,
           phone: input.phone,
+          email: input.email ?? null,
           notes: input.notes ?? null,
           substituteName: input.substituteName ?? null,
           pax: input.pax,
           maxSend: input.maxSend,
-          rsvpStatus: "WAITING",
+          rsvpStatus: input.rsvpStatus,
           sendCount: 0,
         },
       });
@@ -167,46 +171,53 @@ export const guestRouter = createTRPCRouter({
     }),
 
   // UPDATE GUEST
-  update: protectedProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        name: z.string().min(1, "Guest name is required").optional(),
-        phone: z.string().min(1, "Phone number is required").optional(),
-        notes: z.string().optional(),
-        substituteName: z.string().optional(),
-        pax: z.number().int().positive().optional(),
-        rsvpStatus: z.enum(["WAITING", "CONFIRMED", "CANCELLED"]).optional(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const userId = ctx.session?.user.id;
+  // UPDATE GUEST
+update: protectedProcedure
+  .input(
+    z.object({
+      id: z.string(),
 
-      // Get guest with event to verify ownership
-      const guestData = await db.guest.findUnique({
-        where: { id: input.id },
-        include: { event: true },
-      }) as (PrismaGuest & { event: PrismaEvent }) | null;
+      name: z.string().min(1).optional(),
+      phone: z.string().min(1).optional(),
 
-      if (!guestData) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Guest not found" });
-      }
+      email: z.string().nullable().optional(),          // ✔ Tambahkan email
+      notes: z.string().nullable().optional(),          // ✔ Bukan hanya optional
+      substituteName: z.string().nullable().optional(), // ✔ Bukan hanya optional
 
-      if (guestData.event.userId !== userId) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You don't have permission to update this guest",
-        });
-      }
+      pax: z.number().int().positive().optional(),
 
-      const { id, ...updateData } = input;
-      const updatedGuest = await db.guest.update({
-        where: { id },
-        data: updateData,
+      rsvpStatus: z.enum(["WAITING", "CONFIRMED", "CANCELLED"]).optional(), // ✔ Tambahkan
+    })
+  )
+  .mutation(async ({ ctx, input }) => {
+    const userId = ctx.session?.user.id;
+
+    const guestData = await db.guest.findUnique({
+      where: { id: input.id },
+      include: { event: true },
+    }) as (PrismaGuest & { event: PrismaEvent }) | null;
+
+    if (!guestData) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Guest not found" });
+    }
+
+    if (guestData.event.userId !== userId) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You don't have permission to update this guest",
       });
+    }
 
-      return guestSchema.parse(updatedGuest);
-    }),
+    const { id, ...updateData } = input;
+
+    const updatedGuest = await db.guest.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return guestSchema.parse(updatedGuest);
+  })
+
 });
 
 export type GuestRouter = typeof guestRouter;

@@ -165,24 +165,6 @@ export default function ProfilePage() {
         <SubcriptionPlan />
       </div>
 
-      {/* Information Card */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 shadow-xl rounded-2xl p-8 space-y-6">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Personal Information</h3>
-
-        <CardContainer cols={2}>
-          <CardDesign nameCard="Phone" value={profile.phone} />
-          <CardDesign nameCard="ID Card Number" value={profile.idCardNumber} />
-          <CardDesign
-            nameCard="Birth Date"
-            value={new Date(profile.birthDate).toLocaleDateString("id-ID", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          />
-          <CardDesign nameCard="Gender" value={profile.gender} />
-        </CardContainer>
-      </div>
 
       {/* Update Form */}
       <div className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 shadow-xl rounded-2xl p-8 space-y-6">

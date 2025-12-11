@@ -1,9 +1,23 @@
 "use client";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelopeCircleCheck, faPhoneAlt } from "@fortawesome/free-solid-svg-icons";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { guestItem, eventWithGuestItem } from "~/types/eventType";
+import ModalDesign from "./modalDesign";
+import FormSetting from "~/component/formSetting";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faEnvelopeCircleCheck, 
+  faPhoneAlt,
+  faPaperPlane,
+  faCheckCircle,
+  faTimesCircle,
+  faEye,
+  faPenToSquare,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+
+import type { Field } from "~/types/field";
+import { on } from "events";
 
 const columnLabels: Record<string, string> = {
   name: "Guest",
@@ -18,11 +32,15 @@ export default function TableList({
   link,
   detailIdTo,
   display = ["name", "email", "phone", "rsvpStatus"],
+  onDelete,
+  onUpdate,
 }: {
   data: eventWithGuestItem;
   link: string;
   detailIdTo?: string;
   display?: (keyof guestItem)[];
+  onDelete?: (id: string) => Promise<void>;
+  onUpdate?: (id: string, formData: FormData) => Promise<void> ;
 }) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const [search, setSearch] = useState("");
@@ -32,8 +50,13 @@ export default function TableList({
   const [modalSend, setModalSend] = useState(false);
   const [nameModal, setNameModal] = useState("");
   const [dataModal, setDataModal] = useState<guestItem | null>(null);
+  const [modalDelete, setModalDelete] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [modalDetail, setModalDetail] = useState(false);
+  const [modalEdit, setModalEdit] = useState(false);
   const [selectedPhone, setSelectedPhone] = useState("");
   const [selectedEmail, setSelectedEmail] = useState("");
+  
   const router = useRouter();
 
 // Pindahkan dataList ke dalam useMemo
@@ -59,7 +82,15 @@ const processedData = useMemo(() => {
 
   const totalPages = Math.ceil(processedData.length / pageSize);
   const displayedData = processedData.slice((page - 1) * pageSize, page * pageSize);
-
+  const fields: Field[] = [
+    { label: "Name", name: "name", type: "text", value: dataModal?.name || "" },
+    { label: "Phone", name: "phone", type: "text", value: dataModal?.phone || "" },
+    { label: "Email", name: "email", type: "email", value: dataModal?.email || "", optional: true },
+    { label: "RSVP Status", name: "rsvpStatus", type: "select", options: ["WAITING", "CONFIRMED", "CANCELLED"], value: dataModal?.rsvpStatus || "" },
+    { label: "Notes", name: "notes", type: "text", value: dataModal?.notes || "", optional: true },
+    { label: "Substitute Name", name: "substituteName", type: "text", value: dataModal?.substituteName || "" , optional: true },
+    { label: "Pax", name: "pax", type: "number", value: dataModal?.pax || 0 },
+  ]
   return (
     <>
       {modalSend && dataModal && (
@@ -142,6 +173,88 @@ We look forward to seeing you there!`}
         </div>
       )}
 
+     {modalDelete && dataModal && (
+  <ModalDesign isOpen={modalDelete} onClose={() => setModalDelete(false)} title="Are You sure?">
+    <h2 className="text-lg font-semibold mb-4">
+      Delete <span className="text-red-500">{dataModal.name}</span> Status <span className="font-normal">{
+    dataModal.rsvpStatus == "CONFIRMED" ? (<span className="text-green-500">CONFIRMED</span>
+    ) : dataModal.rsvpStatus == "WAITING" ? (
+      <span className="text-yellow-500">WAITING</span>
+    ) : (<span className="text-red-500">CANCELLED</span>
+    )
+
+    }</span>
+    </h2>
+
+    <div className="flex justify-end gap-2">
+      <button
+        className="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded-lg hover:bg-gray-400"
+        onClick={() => setModalDelete(false)}
+      >
+        Cancel
+      </button>
+
+      <button
+        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+        onClick={async () => {
+          if (onDelete && deleteId) {
+            await onDelete(deleteId);
+          }
+          setModalDelete(false);
+        }}
+      >
+        Confirm
+      </button>
+    </div>
+  </ModalDesign>
+)}
+
+{modalDetail && dataModal && (
+  <ModalDesign isOpen={modalDetail} onClose={() => setModalDetail(false)}>
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold mb-3">Guest Detail</h2>
+
+      <div className="space-y-2 text-sm">
+        <p><strong>Name:</strong> {dataModal.name}</p>
+        <p><strong>Email:</strong> {dataModal.email ?? "-"}</p>
+        <p><strong>Phone:</strong> {dataModal.phone ?? "-"}</p>
+        <p><strong>Status:</strong> {dataModal.rsvpStatus}</p>
+        <p><strong>Created:</strong> {new Date(dataModal.createdAt).toLocaleString()}</p>
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          onClick={() => setModalDetail(false)}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </ModalDesign>
+)}
+
+{modalEdit && dataModal && (
+  <ModalDesign isOpen={modalEdit} onClose={() => setModalEdit(false)}>
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold mb-3">Edit Guest</h2>
+     <FormSetting
+  fields={fields}
+  submitText="Update Event"
+  onSubmit={(formData) => {
+    if (onUpdate && dataModal) {
+      onUpdate(dataModal.id, formData);
+      setModalEdit(false);
+    }
+  }}
+  cols={2}
+/>
+
+    </div>
+  </ModalDesign>
+)}
+
+
       <div className="bg-white dark:bg-white/5 backdrop-blur-lg shadow-lg rounded-2xl border border-gray-200 dark:border-white/10 p-4 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <select
@@ -191,26 +304,73 @@ We look forward to seeing you there!`}
                   <td className="px-6 py-4 whitespace-nowrap">{index + 1}</td>
                   {display.map((key) => <td key={key} className="px-6 py-4 whitespace-nowrap">{String(guest[key] ?? "-")}</td>)}
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      {guest.rsvpStatus === "CONFIRMED" ? (
-                        <span className="text-green-500 font-semibold">Confirmed</span>
-                      ) : guest.rsvpStatus === "WAITING" ? (
-                        <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                          onClick={() => {
-                            setDataModal(guest);
-                            setSelectedPhone(guest.phone);
-                            setSelectedEmail(guest.email ?? "");
-                            setNameModal(guest.name);
-                            setModalSend(true);
-                          }}
-                        >
-                          Send
-                        </button>
-                      ) : (
-                        <span className="text-red-500 font-semibold">Cancelled</span>
-                      )}
-                    </div>
-                  </td>
+  <div className="flex items-center gap-4">
+
+    {/* RSVP ACTION */}
+    {guest.rsvpStatus === "CONFIRMED" ? (
+      <span className="text-green-500" title="Confirmed">
+        <FontAwesomeIcon icon={faCheckCircle} className="text-xl" />
+      </span>
+    ) : guest.rsvpStatus === "WAITING" ? (
+      <button
+        title="Send Invitation"
+        className="text-blue-500 hover:text-blue-600"
+        onClick={() => {
+          setDataModal(guest);
+          setSelectedPhone(guest.phone);
+          setSelectedEmail(guest.email ?? "");
+          setNameModal(guest.name);
+          setModalSend(true);
+        }}
+      >
+        <FontAwesomeIcon icon={faPaperPlane} className="text-xl" />
+      </button>
+    ) : (
+      <span className="text-red-500" title="Cancelled">
+        <FontAwesomeIcon icon={faTimesCircle} className="text-xl" />
+      </span>
+    )}
+
+    {/* DETAIL */}
+    <button
+      title="View Details"
+      className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+      onClick={() => {
+        setDataModal(guest);
+        setModalDetail(true);
+      }}
+    >
+      <FontAwesomeIcon icon={faEye} className="text-lg" />
+    </button>
+
+    {/* EDIT */}
+    <button
+      title="Edit Guest"
+      className="text-yellow-500 hover:text-yellow-600"
+      onClick={() => {
+        setDataModal(guest);
+        setModalEdit(true);
+      }}
+    >
+      <FontAwesomeIcon icon={faPenToSquare} className="text-lg" />
+    </button>
+
+    {/* DELETE */}
+    <button
+      title="Delete Guest"
+      className="text-red-500 hover:text-red-600"
+      onClick={() => {
+        setDataModal(guest);
+        setDeleteId(guest.id);
+        setModalDelete(true);
+      }}
+    >
+      <FontAwesomeIcon icon={faTrash} className="text-lg" />
+    </button>
+
+  </div>
+</td>
+
                 </tr>
               ))}
             </tbody>

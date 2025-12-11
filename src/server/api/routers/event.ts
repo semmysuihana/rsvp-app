@@ -12,6 +12,7 @@ const guestSchema = z.object({
   eventId: z.string(),
   name: z.string(),
   phone: z.string(),
+  email: z.string().nullable().optional(),
   rsvpStatus: z.enum(["WAITING", "CONFIRMED", "CANCELLED"]),
   notes: z.string().nullable().optional(),
   substituteName: z.string().nullable().optional(),

@@ -71,7 +71,7 @@ model Guest {
   eventId        String
   name           String
   phone          String
-  email          String     @default("")
+  email          String?
   rsvpStatus     RSVPStatus @default(WAITING)
   notes          String?
   substituteName String?

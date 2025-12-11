@@ -21,7 +21,7 @@ export default function EditPage() {
   
   const [page, setPage] = useState<"edit" | "guest" | "preview">("edit");
   const { eventById, loading, alert, showAlert, setShowAlert, handleEventById, handleUpdate } = useEvent();
-  const {  loading: guestLoading, alert: guestAlert, showAlert: guestShowAlert, setShowAlert: setGuestShowAlert, handleAddGuest, handleGuestById } = useGuest();
+  const {  loading: guestLoading, alert: guestAlert, showAlert: guestShowAlert, setShowAlert: setGuestShowAlert, handleAddGuest, handleGuestById, handleDeleteGuest, handleUpdateGuest } = useGuest();
        const fields: Field[] = [
       { type: "text", name: "name", label: "Event Name", placeholder: "Enter event name", value: eventById?.name },
       { type: "date", name: "date", label: "Date", value: eventById?.date },
@@ -36,8 +36,6 @@ export default function EditPage() {
       { type: "number", name: "maxPax", label: "Max Pax", placeholder: "Enter max pax", value: eventById?.maxPax },
       { type: "textarea", name: "description", label: "Description", placeholder: "Enter event description", optional: true, value: eventById?.description },
     ];
-
-
 
     const editRef = useRef<HTMLButtonElement>(null);
 const guestRef = useRef<HTMLButtonElement>(null);
@@ -185,7 +183,9 @@ const activeRef =
 {page === "guest" && (
   <GuestListPage
   eventById={eventById as eventWithGuestItem}
+  handleDeleteGuest={handleDeleteGuest}
   handleAddGuest={handleAddGuest}
+  handleUpdateGuest={handleUpdateGuest}
 />
 
 )}
@@ -219,7 +219,7 @@ function EditInfoPage({ fields, eventId, handleUpdate }: { fields: Field[]; even
   );
 }
 
-function GuestListPage({ eventById, handleAddGuest }: { eventById: eventWithGuestItem; handleAddGuest: (id:string, formData: FormData) => Promise<boolean> }) {
+function GuestListPage({ eventById, handleAddGuest, handleDeleteGuest, handleUpdateGuest }: { eventById: eventWithGuestItem; handleAddGuest: (id:string, formData: FormData) => Promise<boolean>; handleDeleteGuest: (id: string) => Promise<void>; handleUpdateGuest: (id: string, formData: FormData) => Promise<boolean> }) {
   const [modalAddGuest, setModalAddGuest] = useState(false);
   const fields: Field[] = [
     { label: "Name", name: "name", type: "text" },
@@ -270,6 +270,14 @@ function GuestListPage({ eventById, handleAddGuest }: { eventById: eventWithGues
                        detailIdTo={eventById.id}
                        link={`/events/${eventById.id}/guest`}
                        display={["name", "email", "rsvpStatus"]}
+                        onDelete={async (id: string) => {
+                          await handleDeleteGuest(id);
+                        }}
+                        onUpdate={
+                          async (id: string, formData: FormData) => {
+                            await handleUpdateGuest(id, formData);
+                          }
+                        }
                      />
       ) : (
         <p className="text-gray-500 dark:text-gray-400">

@@ -16,8 +16,6 @@ import SubcriptionPlan from "~/component/subcriptionPlan";
 export default function Event() {
   const { events, loading, alert, showAlert, handleDelete, refetch, setShowAlert, handleEvent } = useEvent();
   const [page, setPage] = useState<"menu" | "create" | "subplan">("menu");
-  
-
   useEffect(() => {
     void refetch();
   }, [refetch]);

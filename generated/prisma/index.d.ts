@@ -3805,7 +3805,7 @@ export namespace Prisma {
     eventId: string
     name: string
     phone: string
-    email: string
+    email: string | null
     rsvpStatus: $Enums.RSVPStatus
     notes: string | null
     substituteName: string | null
@@ -3928,7 +3928,7 @@ export namespace Prisma {
       eventId: string
       name: string
       phone: string
-      email: string
+      email: string | null
       rsvpStatus: $Enums.RSVPStatus
       notes: string | null
       substituteName: string | null
@@ -5207,7 +5207,7 @@ export namespace Prisma {
     eventId?: StringFilter<"Guest"> | string
     name?: StringFilter<"Guest"> | string
     phone?: StringFilter<"Guest"> | string
-    email?: StringFilter<"Guest"> | string
+    email?: StringNullableFilter<"Guest"> | string | null
     rsvpStatus?: EnumRSVPStatusFilter<"Guest"> | $Enums.RSVPStatus
     notes?: StringNullableFilter<"Guest"> | string | null
     substituteName?: StringNullableFilter<"Guest"> | string | null
@@ -5225,7 +5225,7 @@ export namespace Prisma {
     eventId?: SortOrder
     name?: SortOrder
     phone?: SortOrder
-    email?: SortOrder
+    email?: SortOrderInput | SortOrder
     rsvpStatus?: SortOrder
     notes?: SortOrderInput | SortOrder
     substituteName?: SortOrderInput | SortOrder
@@ -5246,7 +5246,7 @@ export namespace Prisma {
     eventId?: StringFilter<"Guest"> | string
     name?: StringFilter<"Guest"> | string
     phone?: StringFilter<"Guest"> | string
-    email?: StringFilter<"Guest"> | string
+    email?: StringNullableFilter<"Guest"> | string | null
     rsvpStatus?: EnumRSVPStatusFilter<"Guest"> | $Enums.RSVPStatus
     notes?: StringNullableFilter<"Guest"> | string | null
     substituteName?: StringNullableFilter<"Guest"> | string | null
@@ -5264,7 +5264,7 @@ export namespace Prisma {
     eventId?: SortOrder
     name?: SortOrder
     phone?: SortOrder
-    email?: SortOrder
+    email?: SortOrderInput | SortOrder
     rsvpStatus?: SortOrder
     notes?: SortOrderInput | SortOrder
     substituteName?: SortOrderInput | SortOrder
@@ -5289,7 +5289,7 @@ export namespace Prisma {
     eventId?: StringWithAggregatesFilter<"Guest"> | string
     name?: StringWithAggregatesFilter<"Guest"> | string
     phone?: StringWithAggregatesFilter<"Guest"> | string
-    email?: StringWithAggregatesFilter<"Guest"> | string
+    email?: StringNullableWithAggregatesFilter<"Guest"> | string | null
     rsvpStatus?: EnumRSVPStatusWithAggregatesFilter<"Guest"> | $Enums.RSVPStatus
     notes?: StringNullableWithAggregatesFilter<"Guest"> | string | null
     substituteName?: StringNullableWithAggregatesFilter<"Guest"> | string | null
@@ -5550,7 +5550,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
-    email?: string
+    email?: string | null
     rsvpStatus?: $Enums.RSVPStatus
     notes?: string | null
     substituteName?: string | null
@@ -5568,7 +5568,7 @@ export namespace Prisma {
     eventId: string
     name: string
     phone: string
-    email?: string
+    email?: string | null
     rsvpStatus?: $Enums.RSVPStatus
     notes?: string | null
     substituteName?: string | null
@@ -5584,7 +5584,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     rsvpStatus?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     substituteName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5602,7 +5602,7 @@ export namespace Prisma {
     eventId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     rsvpStatus?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     substituteName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5619,7 +5619,7 @@ export namespace Prisma {
     eventId: string
     name: string
     phone: string
-    email?: string
+    email?: string | null
     rsvpStatus?: $Enums.RSVPStatus
     notes?: string | null
     substituteName?: string | null
@@ -5635,7 +5635,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     rsvpStatus?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     substituteName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5652,7 +5652,7 @@ export namespace Prisma {
     eventId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     rsvpStatus?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     substituteName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5918,13 +5918,6 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
-  export type EnumRSVPStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumRSVPStatusFilter<$PrismaModel> | $Enums.RSVPStatus
-  }
-
   export type StringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -5938,6 +5931,13 @@ export namespace Prisma {
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     mode?: QueryMode
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type EnumRSVPStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRSVPStatusFilter<$PrismaModel> | $Enums.RSVPStatus
   }
 
   export type DateTimeNullableFilter<$PrismaModel = never> = {
@@ -6024,16 +6024,6 @@ export namespace Prisma {
     maxSend?: SortOrder
   }
 
-  export type EnumRSVPStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumRSVPStatusWithAggregatesFilter<$PrismaModel> | $Enums.RSVPStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumRSVPStatusFilter<$PrismaModel>
-    _max?: NestedEnumRSVPStatusFilter<$PrismaModel>
-  }
-
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -6050,6 +6040,16 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type EnumRSVPStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRSVPStatusWithAggregatesFilter<$PrismaModel> | $Enums.RSVPStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRSVPStatusFilter<$PrismaModel>
+    _max?: NestedEnumRSVPStatusFilter<$PrismaModel>
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -6194,12 +6194,12 @@ export namespace Prisma {
     connect?: EventWhereUniqueInput
   }
 
-  export type EnumRSVPStatusFieldUpdateOperationsInput = {
-    set?: $Enums.RSVPStatus
-  }
-
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
+  }
+
+  export type EnumRSVPStatusFieldUpdateOperationsInput = {
+    set?: $Enums.RSVPStatus
   }
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -6342,13 +6342,6 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
-  export type NestedEnumRSVPStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumRSVPStatusFilter<$PrismaModel> | $Enums.RSVPStatus
-  }
-
   export type NestedStringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -6363,6 +6356,13 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type NestedEnumRSVPStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRSVPStatusFilter<$PrismaModel> | $Enums.RSVPStatus
+  }
+
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -6372,16 +6372,6 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
-  export type NestedEnumRSVPStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumRSVPStatusWithAggregatesFilter<$PrismaModel> | $Enums.RSVPStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumRSVPStatusFilter<$PrismaModel>
-    _max?: NestedEnumRSVPStatusFilter<$PrismaModel>
   }
 
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -6410,6 +6400,16 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedEnumRSVPStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRSVPStatusWithAggregatesFilter<$PrismaModel> | $Enums.RSVPStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRSVPStatusFilter<$PrismaModel>
+    _max?: NestedEnumRSVPStatusFilter<$PrismaModel>
   }
 
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -6551,7 +6551,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
-    email?: string
+    email?: string | null
     rsvpStatus?: $Enums.RSVPStatus
     notes?: string | null
     substituteName?: string | null
@@ -6567,7 +6567,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
-    email?: string
+    email?: string | null
     rsvpStatus?: $Enums.RSVPStatus
     notes?: string | null
     substituteName?: string | null
@@ -6654,7 +6654,7 @@ export namespace Prisma {
     eventId?: StringFilter<"Guest"> | string
     name?: StringFilter<"Guest"> | string
     phone?: StringFilter<"Guest"> | string
-    email?: StringFilter<"Guest"> | string
+    email?: StringNullableFilter<"Guest"> | string | null
     rsvpStatus?: EnumRSVPStatusFilter<"Guest"> | $Enums.RSVPStatus
     notes?: StringNullableFilter<"Guest"> | string | null
     substituteName?: StringNullableFilter<"Guest"> | string | null
@@ -6836,7 +6836,7 @@ export namespace Prisma {
     id?: string
     name: string
     phone: string
-    email?: string
+    email?: string | null
     rsvpStatus?: $Enums.RSVPStatus
     notes?: string | null
     substituteName?: string | null
@@ -6852,7 +6852,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     rsvpStatus?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     substituteName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -6868,7 +6868,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     rsvpStatus?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     substituteName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -6884,7 +6884,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     rsvpStatus?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     substituteName?: NullableStringFieldUpdateOperationsInput | string | null
