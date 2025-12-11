@@ -1,5 +1,3 @@
-"use client";
-
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
@@ -166,6 +164,48 @@ export const guestRouter = createTRPCRouter({
       });
 
       return guestSchema.parse(guestData);
+    }),
+
+  // UPDATE GUEST
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().min(1, "Guest name is required").optional(),
+        phone: z.string().min(1, "Phone number is required").optional(),
+        notes: z.string().optional(),
+        substituteName: z.string().optional(),
+        pax: z.number().int().positive().optional(),
+        rsvpStatus: z.enum(["WAITING", "CONFIRMED", "CANCELLED"]).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session?.user.id;
+
+      // Get guest with event to verify ownership
+      const guestData = await db.guest.findUnique({
+        where: { id: input.id },
+        include: { event: true },
+      }) as (PrismaGuest & { event: PrismaEvent }) | null;
+
+      if (!guestData) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Guest not found" });
+      }
+
+      if (guestData.event.userId !== userId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You don't have permission to update this guest",
+        });
+      }
+
+      const { id, ...updateData } = input;
+      const updatedGuest = await db.guest.update({
+        where: { id },
+        data: updateData,
+      });
+
+      return guestSchema.parse(updatedGuest);
     }),
 });
 
