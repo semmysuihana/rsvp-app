@@ -168,6 +168,7 @@ exports.Prisma.GuestScalarFieldEnum = {
   sendCount: 'sendCount',
   maxSend: 'maxSend',
   lastSendAt: 'lastSendAt',
+  token: 'token',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

@@ -142,7 +142,6 @@ border border-gray-200 dark:border-gray-700 rounded-xl p-6 transition-colors">
 
               <TableList
                 data={eventById as eventWithGuestItem}
-                detailIdTo={eventById.id}
                 link={`/events/${eventById.id}/guest`}
                 display={["name", "email", "rsvpStatus"]}
                 

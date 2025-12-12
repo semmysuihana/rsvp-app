@@ -20,6 +20,7 @@ const guestSchema = z.object({
   sendCount: z.number(),
   maxSend: z.number(),
   lastSendAt: z.date().nullable(),
+  token: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });

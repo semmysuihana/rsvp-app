@@ -21,6 +21,7 @@ export default function EditPage() {
   
   const [page, setPage] = useState<"edit" | "guest" | "preview">("edit");
   const { eventById, loading, alert, showAlert, setShowAlert, handleEventById, handleUpdate } = useEvent();
+  console.log("Event By ID in Edit Page:", eventById);
   const {  loading: guestLoading, alert: guestAlert, showAlert: guestShowAlert, setShowAlert: setGuestShowAlert, handleAddGuest, handleGuestById, handleDeleteGuest, handleUpdateGuest } = useGuest();
        const fields: Field[] = [
       { type: "text", name: "name", label: "Event Name", placeholder: "Enter event name", value: eventById?.name },
@@ -267,7 +268,6 @@ function GuestListPage({ eventById, handleAddGuest, handleDeleteGuest, handleUpd
       {eventById?.guests?.length ? (
        <TableList
                        data={eventById}
-                       detailIdTo={eventById.id}
                        link={`/events/${eventById.id}/guest`}
                        display={["name", "email", "rsvpStatus"]}
                         onDelete={async (id: string) => {

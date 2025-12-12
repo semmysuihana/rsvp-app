@@ -3610,6 +3610,7 @@ export namespace Prisma {
     sendCount: number | null
     maxSend: number | null
     lastSendAt: Date | null
+    token: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3627,6 +3628,7 @@ export namespace Prisma {
     sendCount: number | null
     maxSend: number | null
     lastSendAt: Date | null
+    token: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3644,6 +3646,7 @@ export namespace Prisma {
     sendCount: number
     maxSend: number
     lastSendAt: number
+    token: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -3675,6 +3678,7 @@ export namespace Prisma {
     sendCount?: true
     maxSend?: true
     lastSendAt?: true
+    token?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -3692,6 +3696,7 @@ export namespace Prisma {
     sendCount?: true
     maxSend?: true
     lastSendAt?: true
+    token?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -3709,6 +3714,7 @@ export namespace Prisma {
     sendCount?: true
     maxSend?: true
     lastSendAt?: true
+    token?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -3813,6 +3819,7 @@ export namespace Prisma {
     sendCount: number
     maxSend: number
     lastSendAt: Date | null
+    token: string
     createdAt: Date
     updatedAt: Date
     _count: GuestCountAggregateOutputType | null
@@ -3849,6 +3856,7 @@ export namespace Prisma {
     sendCount?: boolean
     maxSend?: boolean
     lastSendAt?: boolean
+    token?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
@@ -3867,6 +3875,7 @@ export namespace Prisma {
     sendCount?: boolean
     maxSend?: boolean
     lastSendAt?: boolean
+    token?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
@@ -3885,6 +3894,7 @@ export namespace Prisma {
     sendCount?: boolean
     maxSend?: boolean
     lastSendAt?: boolean
+    token?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
@@ -3903,11 +3913,12 @@ export namespace Prisma {
     sendCount?: boolean
     maxSend?: boolean
     lastSendAt?: boolean
+    token?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type GuestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventId" | "name" | "phone" | "email" | "rsvpStatus" | "notes" | "substituteName" | "pax" | "sendCount" | "maxSend" | "lastSendAt" | "createdAt" | "updatedAt", ExtArgs["result"]["guest"]>
+  export type GuestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventId" | "name" | "phone" | "email" | "rsvpStatus" | "notes" | "substituteName" | "pax" | "sendCount" | "maxSend" | "lastSendAt" | "token" | "createdAt" | "updatedAt", ExtArgs["result"]["guest"]>
   export type GuestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     event?: boolean | EventDefaultArgs<ExtArgs>
   }
@@ -3936,6 +3947,7 @@ export namespace Prisma {
       sendCount: number
       maxSend: number
       lastSendAt: Date | null
+      token: string
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["guest"]>
@@ -4374,6 +4386,7 @@ export namespace Prisma {
     readonly sendCount: FieldRef<"Guest", 'Int'>
     readonly maxSend: FieldRef<"Guest", 'Int'>
     readonly lastSendAt: FieldRef<"Guest", 'DateTime'>
+    readonly token: FieldRef<"Guest", 'String'>
     readonly createdAt: FieldRef<"Guest", 'DateTime'>
     readonly updatedAt: FieldRef<"Guest", 'DateTime'>
   }
@@ -4857,6 +4870,7 @@ export namespace Prisma {
     sendCount: 'sendCount',
     maxSend: 'maxSend',
     lastSendAt: 'lastSendAt',
+    token: 'token',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -5215,6 +5229,7 @@ export namespace Prisma {
     sendCount?: IntFilter<"Guest"> | number
     maxSend?: IntFilter<"Guest"> | number
     lastSendAt?: DateTimeNullableFilter<"Guest"> | Date | string | null
+    token?: StringFilter<"Guest"> | string
     createdAt?: DateTimeFilter<"Guest"> | Date | string
     updatedAt?: DateTimeFilter<"Guest"> | Date | string
     event?: XOR<EventScalarRelationFilter, EventWhereInput>
@@ -5233,6 +5248,7 @@ export namespace Prisma {
     sendCount?: SortOrder
     maxSend?: SortOrder
     lastSendAt?: SortOrderInput | SortOrder
+    token?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     event?: EventOrderByWithRelationInput
@@ -5240,6 +5256,7 @@ export namespace Prisma {
 
   export type GuestWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    token?: string
     AND?: GuestWhereInput | GuestWhereInput[]
     OR?: GuestWhereInput[]
     NOT?: GuestWhereInput | GuestWhereInput[]
@@ -5257,7 +5274,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Guest"> | Date | string
     updatedAt?: DateTimeFilter<"Guest"> | Date | string
     event?: XOR<EventScalarRelationFilter, EventWhereInput>
-  }, "id">
+  }, "id" | "token">
 
   export type GuestOrderByWithAggregationInput = {
     id?: SortOrder
@@ -5272,6 +5289,7 @@ export namespace Prisma {
     sendCount?: SortOrder
     maxSend?: SortOrder
     lastSendAt?: SortOrderInput | SortOrder
+    token?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: GuestCountOrderByAggregateInput
@@ -5297,6 +5315,7 @@ export namespace Prisma {
     sendCount?: IntWithAggregatesFilter<"Guest"> | number
     maxSend?: IntWithAggregatesFilter<"Guest"> | number
     lastSendAt?: DateTimeNullableWithAggregatesFilter<"Guest"> | Date | string | null
+    token?: StringWithAggregatesFilter<"Guest"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Guest"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Guest"> | Date | string
   }
@@ -5558,6 +5577,7 @@ export namespace Prisma {
     sendCount?: number
     maxSend?: number
     lastSendAt?: Date | string | null
+    token: string
     createdAt?: Date | string
     updatedAt?: Date | string
     event: EventCreateNestedOneWithoutGuestsInput
@@ -5576,6 +5596,7 @@ export namespace Prisma {
     sendCount?: number
     maxSend?: number
     lastSendAt?: Date | string | null
+    token: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -5592,6 +5613,7 @@ export namespace Prisma {
     sendCount?: IntFieldUpdateOperationsInput | number
     maxSend?: IntFieldUpdateOperationsInput | number
     lastSendAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    token?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     event?: EventUpdateOneRequiredWithoutGuestsNestedInput
@@ -5610,6 +5632,7 @@ export namespace Prisma {
     sendCount?: IntFieldUpdateOperationsInput | number
     maxSend?: IntFieldUpdateOperationsInput | number
     lastSendAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    token?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -5627,6 +5650,7 @@ export namespace Prisma {
     sendCount?: number
     maxSend?: number
     lastSendAt?: Date | string | null
+    token: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -5643,6 +5667,7 @@ export namespace Prisma {
     sendCount?: IntFieldUpdateOperationsInput | number
     maxSend?: IntFieldUpdateOperationsInput | number
     lastSendAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    token?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -5660,6 +5685,7 @@ export namespace Prisma {
     sendCount?: IntFieldUpdateOperationsInput | number
     maxSend?: IntFieldUpdateOperationsInput | number
     lastSendAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    token?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -5974,6 +6000,7 @@ export namespace Prisma {
     sendCount?: SortOrder
     maxSend?: SortOrder
     lastSendAt?: SortOrder
+    token?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -5997,6 +6024,7 @@ export namespace Prisma {
     sendCount?: SortOrder
     maxSend?: SortOrder
     lastSendAt?: SortOrder
+    token?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -6014,6 +6042,7 @@ export namespace Prisma {
     sendCount?: SortOrder
     maxSend?: SortOrder
     lastSendAt?: SortOrder
+    token?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -6559,6 +6588,7 @@ export namespace Prisma {
     sendCount?: number
     maxSend?: number
     lastSendAt?: Date | string | null
+    token: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -6575,6 +6605,7 @@ export namespace Prisma {
     sendCount?: number
     maxSend?: number
     lastSendAt?: Date | string | null
+    token: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -6662,6 +6693,7 @@ export namespace Prisma {
     sendCount?: IntFilter<"Guest"> | number
     maxSend?: IntFilter<"Guest"> | number
     lastSendAt?: DateTimeNullableFilter<"Guest"> | Date | string | null
+    token?: StringFilter<"Guest"> | string
     createdAt?: DateTimeFilter<"Guest"> | Date | string
     updatedAt?: DateTimeFilter<"Guest"> | Date | string
   }
@@ -6844,6 +6876,7 @@ export namespace Prisma {
     sendCount?: number
     maxSend?: number
     lastSendAt?: Date | string | null
+    token: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -6860,6 +6893,7 @@ export namespace Prisma {
     sendCount?: IntFieldUpdateOperationsInput | number
     maxSend?: IntFieldUpdateOperationsInput | number
     lastSendAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    token?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -6876,6 +6910,7 @@ export namespace Prisma {
     sendCount?: IntFieldUpdateOperationsInput | number
     maxSend?: IntFieldUpdateOperationsInput | number
     lastSendAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    token?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -6892,6 +6927,7 @@ export namespace Prisma {
     sendCount?: IntFieldUpdateOperationsInput | number
     maxSend?: IntFieldUpdateOperationsInput | number
     lastSendAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    token?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

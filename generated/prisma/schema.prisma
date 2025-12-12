@@ -79,6 +79,7 @@ model Guest {
   sendCount      Int        @default(0)
   maxSend        Int        @default(3)
   lastSendAt     DateTime?
+  token          String     @unique
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 

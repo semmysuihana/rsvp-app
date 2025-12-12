@@ -30,14 +30,12 @@ const columnLabels: Record<string, string> = {
 export default function TableList({
   data,
   link,
-  detailIdTo,
   display = ["name", "email", "phone", "rsvpStatus"],
   onDelete,
   onUpdate,
 }: {
   data: eventWithGuestItem;
   link: string;
-  detailIdTo?: string;
   display?: (keyof guestItem)[];
   onDelete?: (id: string) => Promise<void>;
   onUpdate?: (id: string, formData: FormData) => Promise<void> ;
@@ -56,9 +54,7 @@ export default function TableList({
   const [modalEdit, setModalEdit] = useState(false);
   const [selectedPhone, setSelectedPhone] = useState("");
   const [selectedEmail, setSelectedEmail] = useState("");
-  
   const router = useRouter();
-
 // Pindahkan dataList ke dalam useMemo
 const processedData = useMemo(() => {
   const dataList: guestItem[] = Array.isArray(data.guests) ? data.guests : [];
@@ -139,7 +135,7 @@ You're invited to ${data.name}!
 📍 Location: ${data.address}
 
 Please confirm your attendance by clicking the link below:
-https://${baseUrl}/events/${detailIdTo}/rsvp?guestId=${dataModal.id}
+${baseUrl}rsvp?eventId=${data.id}&guestId=${dataModal.id}&token=${dataModal.token}
 
 We look forward to seeing you there!`}
                 </div>
@@ -316,7 +312,7 @@ We look forward to seeing you there!`}
         title="Send Invitation"
         className="text-blue-500 hover:text-blue-600"
         onClick={() => {
-          setDataModal(guest);
+          setDataModal({...guest});
           setSelectedPhone(guest.phone);
           setSelectedEmail(guest.email ?? "");
           setNameModal(guest.name);

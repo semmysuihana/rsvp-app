@@ -34,6 +34,7 @@ export interface guestItem  {
   pax: number;
   sendCount: number;
   maxSend: number;
+  token: string;
   lastSendAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;

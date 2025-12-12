@@ -1,8 +1,33 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { db } from "~/server/db";
 import type { Event as PrismaEvent, Guest as PrismaGuest } from "../../../../generated/prisma";
+import { randomUUID } from "crypto";
+
+// =========================
+// Helper Functions
+// =========================
+async function generateUniqueToken(maxRetries = 5): Promise<string> {
+  for (let i = 0; i < maxRetries; i++) {
+    const token = randomUUID();
+    
+    // Check if token already exists
+    const existing = await db.guest.findUnique({
+      where: { token },
+    });
+    
+    if (!existing) {
+      return token;
+    }
+  }
+  
+  // If still duplicate after retries, throw error
+  throw new TRPCError({
+    code: "INTERNAL_SERVER_ERROR",
+    message: "Failed to generate unique token after multiple attempts",
+  });
+}
 
 // =========================
 // Zod Schemas
@@ -20,6 +45,7 @@ export const guestSchema = z.object({
   sendCount: z.number(),
   maxSend: z.number(),
   lastSendAt: z.date().nullable(),
+  token: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -38,6 +64,7 @@ export const eventSchema = z.object({
   city: z.string(),
   googleMapUrl: z.string(),
   maxPax: z.number(),
+  description: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
   guests: z.array(guestSchema).optional(),
@@ -50,6 +77,72 @@ const guestWithEventSchema = guestSchema.extend({ event: eventSchema });
 // Guest Router
 // =========================
 export const guestRouter = createTRPCRouter({
+  // PUBLIC: GET GUEST BY ID AND TOKEN (for RSVP page)
+  getByIdAndToken: publicProcedure
+    .input(z.object({
+      guestId: z.string(),
+      token: z.string(),
+    }))
+    .output(guestWithEventSchema.nullable())
+    .query(async ({ input }) => {
+      const { guestId, token } = input;
+
+      const guestData = await db.guest.findUnique({
+        where: { id: guestId },
+        include: { event: true },
+      }) as (PrismaGuest & { event: PrismaEvent }) | null;
+
+      if (!guestData) return null;
+
+      // Verify token
+      if (guestData.token !== token) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Invalid token",
+        });
+      }
+
+      return guestWithEventSchema.parse(guestData);
+    }),
+
+  // PUBLIC: UPDATE RSVP STATUS (for RSVP page)
+  updateRsvpStatus: publicProcedure
+    .input(z.object({
+      guestId: z.string(),
+      token: z.string(),
+      rsvpStatus: z.enum(["CONFIRMED", "CANCELLED"]),
+    }))
+    .output(guestSchema)
+    .mutation(async ({ input }) => {
+      const { guestId, token, rsvpStatus } = input;
+
+      const guestData = await db.guest.findUnique({
+        where: { id: guestId },
+      });
+
+      if (!guestData) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Guest not found",
+        });
+      }
+
+      // Verify token
+      if (guestData.token !== token) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Invalid token",
+        });
+      }
+
+      const updatedGuest = await db.guest.update({
+        where: { id: guestId },
+        data: { rsvpStatus },
+      });
+
+      return guestSchema.parse(updatedGuest);
+    }),
+
   // GET EVENT WITH GUESTS BY eventId
   getEventWithGuests: protectedProcedure
     .input(z.string())
@@ -152,6 +245,9 @@ export const guestRouter = createTRPCRouter({
         });
       }
 
+      // Generate unique token
+      const uniqueToken = await generateUniqueToken();
+
       const guestData = await db.guest.create({
         data: {
           eventId: input.eventId,
@@ -164,13 +260,13 @@ export const guestRouter = createTRPCRouter({
           maxSend: input.maxSend,
           rsvpStatus: input.rsvpStatus,
           sendCount: 0,
+          token: uniqueToken,
         },
       });
 
       return guestSchema.parse(guestData);
     }),
 
-  // UPDATE GUEST
   // UPDATE GUEST
 update: protectedProcedure
   .input(
